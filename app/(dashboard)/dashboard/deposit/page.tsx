@@ -7,25 +7,25 @@ const CRYPTO_OPTIONS = [
   {
     name: "Bitcoin",
     symbol: "BTC",
-    address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+    address: "bc1qqxcqdxlqdnxxhkjryzzg6t929fdfsk335g085g",
     color: "#f7931a",
   },
   {
     name: "Ethereum",
     symbol: "ETH",
-    address: "0x742d35Cc6634C0532925a3b8D4C9C61B3a1B1B1B",
+    address: "0xF13A8A59C278ADff9a96E892F68DBdf85E0723bF",
     color: "#627eea",
   },
   {
     name: "USD Tether",
     symbol: "USDT",
-    address: "TRx8JaV6JhJWByD7Nkdm3k4F3VVdK2JhB8",
+    address: "0xF13A8A59C278ADff9a96E892F68DBdf85E0723bF",
     color: "#26a17b",
   },
   {
     name: "Solana",
     symbol: "SOL",
-    address: "6ZCmhMVcn7KP3mMnz5UJb3C7GiSZdHNrYQ9aKfN5JdX",
+    address: "7vcj48VjPwY2N86j4Px3tpPUzaC42nDecFuURr6spPme",
     color: "#9945ff",
   },
 ];
