@@ -5,9 +5,15 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
-  title: "Primevision Trades – Trade Smarter. Grow Faster.",
+  title: "PrimeVision Trades – Trade Smarter. Grow Faster.",
   description:
     "Trade Futures, US Stocks, and Cryptocurrency on one powerful platform. Copy expert traders, monitor live charts, and manage your portfolio with precision.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
