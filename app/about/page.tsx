@@ -58,11 +58,11 @@ export default function AboutPage() {
                 color: "#cdcacc",
               }}
             >
-              CrestlineTrades was created with a simple mission, to make trading smarter, faster, and more accessible.
+              PrimeVision Trades was created with a simple mission, to make trading smarter, faster, and more accessible.
               <br /><br />
               In a world where markets move in seconds, we believe traders deserve tools that move just as fast. Our platform combines real-time data, intuitive design, and powerful execution systems to help users stay ahead of the curve.
               <br /><br />
-              Whether you&apos;re just getting started or actively managing trades, CrestlineTrades gives you the edge to act with confidence.
+              Whether you&apos;re just getting started or actively managing trades, PrimeVision Trades gives you the edge to act with confidence.
             </p>
 
             {/* Our Mission card */}
@@ -128,7 +128,7 @@ export default function AboutPage() {
           className="text-center py-16"
           style={{ fontFamily: "Satoshi", fontSize: "40px", fontWeight: 500, color: "#e9d758" }}
         >
-          Welcome to CrestlineTrades.
+          Welcome to PrimeVision Trades.
         </p>
       </main>
       <Footer />

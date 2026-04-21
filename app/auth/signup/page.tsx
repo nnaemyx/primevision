@@ -66,7 +66,7 @@ export default function SignupPage() {
     try {
       const { data } = await api.post("/auth/verify-otp", { userId, otp });
       setAuth(data.user, data.token);
-      toast.success("Welcome to CrestlineTrades!");
+      toast.success("Welcome to PrimeVision Trades!");
       router.push("/dashboard");
     } catch (err: unknown) {
       toast.error((err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Invalid OTP");
@@ -109,7 +109,7 @@ export default function SignupPage() {
       {/* Left panel */}
       <div className="hidden lg:flex flex-col px-12 py-14 relative" style={{ width: "42%", flexShrink: 0 }}>
         <Link href="/" className="block mb-6" style={{ fontFamily: "Satoshi", fontSize: "26px", fontWeight: 700, color: "#fff" }}>
-          Crestline <span style={{ color: "#e9d758" }}>Trades</span>
+          PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
         </Link>
         <p style={{ fontFamily: "Satoshi", fontSize: "18px", color: "#cdcacc" }}>
           Already have an account?{" "}
@@ -141,14 +141,14 @@ export default function SignupPage() {
         style={{ background: "#150578", borderRadius: "20px", margin: "24px 24px 24px 0" }}
       >
         <Link href="/" className="lg:hidden block mb-8" style={{ fontFamily: "Satoshi", fontSize: "22px", fontWeight: 700, color: "#fff" }}>
-          Crestline <span style={{ color: "#e9d758" }}>Trades</span>
+          PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
         </Link>
 
         <h1 style={{ fontFamily: "Satoshi", fontSize: "clamp(36px,4vw,48px)", fontWeight: 400, color: "#fff", lineHeight: 1, marginBottom: "8px" }}>
           Get <strong style={{ fontWeight: 700 }}>Started</strong>
         </h1>
         <p style={{ fontFamily: "Satoshi", fontSize: "18px", color: "#cdcacc", marginBottom: "32px" }}>
-          Start trading different assets with <span style={{ color: "#e9d758" }}>Crestline</span>
+          Start trading different assets with <span style={{ color: "#e9d758" }}>PrimeVision</span>
         </p>
 
         <form onSubmit={handleRegister} className="flex flex-col gap-4 max-w-[520px]">

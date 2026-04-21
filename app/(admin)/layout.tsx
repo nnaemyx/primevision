@@ -54,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div>
           <Link href="/admin" className="block mb-8">
             <p className="text-xl font-bold text-white">
-              Crestline <span style={{ color: "#e9d758" }}>Admin</span>
+              PrimeVision <span style={{ color: "#e9d758" }}>Admin</span>
             </p>
           </Link>
           <nav className="flex flex-col gap-1">

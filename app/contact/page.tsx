@@ -179,7 +179,7 @@ export default function ContactPage() {
           className="text-center py-12"
           style={{ fontFamily: "Satoshi", fontSize: "40px", fontWeight: 500, color: "#e9d758" }}
         >
-          Welcome to CrestlineTrades.
+          Welcome to PrimeVision Trades.
         </p>
       </main>
       <Footer />

@@ -21,7 +21,7 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "0",
-      text: "Welcome to CrestlineTrades support! How can we help you today?",
+      text: "Welcome to PrimeVision Trades support! How can we help you today?",
       from: "support",
       time: now(),
     },

@@ -29,9 +29,14 @@ const pillInput: React.CSSProperties = {
   fontWeight: 400,
 };
 
+type Step = "login" | "otp";
+
 export default function LoginPage() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
+  const [step, setStep] = useState<Step>("login");
+  const [userId, setUserId] = useState("");
+  const [otp, setOtp] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
@@ -45,7 +50,29 @@ export default function LoginPage() {
       toast.success(`Welcome back, ${data.user.name.split(" ")[0]}!`);
       router.push(data.user.role === "admin" ? "/admin" : "/dashboard");
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Login failed";
+      const errData = (err as { response?: { data?: { message?: string; requiresVerification?: boolean; userId?: string } } })?.response?.data;
+      if (errData?.requiresVerification && errData.userId) {
+        setUserId(errData.userId);
+        setStep("otp");
+        toast.info("Check your email for a verification code.");
+      } else {
+        toast.error(errData?.message || "Login failed");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data } = await api.post("/auth/verify-otp", { userId, otp });
+      setAuth(data.user, data.token);
+      toast.success(`Welcome, ${data.user.name.split(" ")[0]}!`);
+      router.push(data.user.role === "admin" ? "/admin" : "/dashboard");
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Invalid OTP";
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -61,7 +88,7 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <Link href="/" className="block mb-6" style={{ fontFamily: "Satoshi", fontSize: "26px", fontWeight: 700, color: "#fff" }}>
-          Crestline <span style={{ color: "#e9d758" }}>Trades</span>
+          PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
         </Link>
         <p style={{ fontFamily: "Satoshi", fontSize: "18px", fontWeight: 400, color: "#cdcacc" }}>
           Don&apos;t have an account?{" "}
@@ -95,57 +122,92 @@ export default function LoginPage() {
       >
         {/* Mobile logo */}
         <Link href="/" className="lg:hidden block mb-8" style={{ fontFamily: "Satoshi", fontSize: "22px", fontWeight: 700, color: "#fff" }}>
-          Crestline <span style={{ color: "#e9d758" }}>Trades</span>
+          PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
         </Link>
 
-        <h1 style={{ fontFamily: "Satoshi", fontSize: "clamp(36px,4vw,48px)", fontWeight: 400, color: "#fff", lineHeight: 1, marginBottom: "8px" }}>
-          Welcome Back
-        </h1>
-        <p style={{ fontFamily: "Satoshi", fontSize: "18px", fontWeight: 400, color: "#cdcacc", marginBottom: "40px" }}>
-          Trade and manage your portfolio
-        </p>
+        {step === "login" ? (
+          <>
+            <h1 style={{ fontFamily: "Satoshi", fontSize: "clamp(36px,4vw,48px)", fontWeight: 400, color: "#fff", lineHeight: 1, marginBottom: "8px" }}>
+              Welcome Back
+            </h1>
+            <p style={{ fontFamily: "Satoshi", fontSize: "18px", fontWeight: 400, color: "#cdcacc", marginBottom: "40px" }}>
+              Trade and manage your portfolio
+            </p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 max-w-[520px]">
-          {/* Email */}
-          <div style={pillWrap}>
-            <input type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required style={pillInput} />
-          </div>
-
-          {/* Password */}
-          <div style={pillWrap}>
-            <input
-              type={showPass ? "text" : "password"}
-              placeholder="Password"
-              value={form.password}
-              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-              required
-              style={{ ...pillInput, flex: 1 }}
-            />
-            <button type="button" onClick={() => setShowPass(!showPass)} style={{ color: "rgba(205,202,204,0.7)", flexShrink: 0 }}>
-              {showPass ? <Eye size={20} /> : <EyeOff size={20} />}
-            </button>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-6">
-            <Button
-              type="submit"
-              disabled={loading}
-              className="rounded-full font-medium"
-              style={{ background: "#f5a623", color: "#fff", height: "52px", padding: "0 48px", fontSize: "18px", fontFamily: "Satoshi", fontWeight: 500 }}
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </Button>
-            <Link href="/auth/forgot-password" style={{ fontFamily: "Satoshi", fontSize: "18px", fontWeight: 400, color: "#e9d758" }}>
-              Forgot Password
-            </Link>
-          </div>
-
-          <p className="mt-2" style={{ fontFamily: "Satoshi", fontSize: "16px", color: "#cdcacc" }}>
-            Don&apos;t have an account?{" "}
-            <Link href="/auth/signup" style={{ color: "#e9d758" }}>Sign up</Link>
-          </p>
-        </form>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5 max-w-[520px]">
+              <div style={pillWrap}>
+                <input type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required style={pillInput} />
+              </div>
+              <div style={pillWrap}>
+                <input
+                  type={showPass ? "text" : "password"}
+                  placeholder="Password"
+                  value={form.password}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                  required
+                  style={{ ...pillInput, flex: 1 }}
+                />
+                <button type="button" onClick={() => setShowPass(!showPass)} style={{ color: "rgba(205,202,204,0.7)", flexShrink: 0 }}>
+                  {showPass ? <Eye size={20} /> : <EyeOff size={20} />}
+                </button>
+              </div>
+              <div className="flex items-center gap-6">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="rounded-full font-medium"
+                  style={{ background: "#f5a623", color: "#fff", height: "52px", padding: "0 48px", fontSize: "18px", fontFamily: "Satoshi", fontWeight: 500 }}
+                >
+                  {loading ? "Signing in..." : "Sign in"}
+                </Button>
+                <Link href="/auth/forgot-password" style={{ fontFamily: "Satoshi", fontSize: "18px", fontWeight: 400, color: "#e9d758" }}>
+                  Forgot Password
+                </Link>
+              </div>
+              <p className="mt-2" style={{ fontFamily: "Satoshi", fontSize: "16px", color: "#cdcacc" }}>
+                Don&apos;t have an account?{" "}
+                <Link href="/auth/signup" style={{ color: "#e9d758" }}>Sign up</Link>
+              </p>
+            </form>
+          </>
+        ) : (
+          <>
+            <h1 style={{ fontFamily: "Satoshi", fontSize: "clamp(32px,4vw,44px)", fontWeight: 400, color: "#fff", lineHeight: 1, marginBottom: "8px" }}>
+              Verify Your Email
+            </h1>
+            <p style={{ fontFamily: "Satoshi", fontSize: "16px", color: "#cdcacc", marginBottom: "40px" }}>
+              A 6-digit code was sent to <strong style={{ color: "#fff" }}>{form.email}</strong>. Enter it below to continue.
+            </p>
+            <form onSubmit={handleVerifyOTP} className="flex flex-col gap-5 max-w-[520px]">
+              <div style={pillWrap}>
+                <input
+                  type="text"
+                  placeholder="000000"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/, "").slice(0, 6))}
+                  maxLength={6}
+                  required
+                  style={{ ...pillInput, textAlign: "center", fontSize: "28px", letterSpacing: "16px" }}
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading || otp.length < 6}
+                className="rounded-full font-medium max-w-[520px]"
+                style={{ background: "#f5a623", color: "#fff", height: "52px", fontSize: "18px", fontFamily: "Satoshi", fontWeight: 500 }}
+              >
+                {loading ? "Verifying..." : "Verify & Sign In"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => { setStep("login"); setOtp(""); }}
+                style={{ fontFamily: "Satoshi", fontSize: "15px", color: "#e9d758", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
+              >
+                ← Back to login
+              </button>
+            </form>
+          </>
+        )}
       </div>
 
       {/* Swirl decorative — bottom RIGHT of whole page, outside card */}

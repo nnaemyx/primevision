@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0e0e52" }}>
       <div className="w-full max-w-[480px] rounded-[20px] p-10" style={{ background: "#150578" }}>
         <Link href="/" className="text-xl font-bold text-white block mb-8">
-          Crestline <span style={{ color: "#e9d758" }}>Trades</span>
+          PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
         </Link>
         {sent ? (
           <div className="text-center">
