@@ -9,7 +9,7 @@ import ChatWidget from "@/components/chat/ChatWidget";
 
 export default function LandingPage() {
   return (
-    <div style={{ background: "#0e0e52", minHeight: "100vh", position: "relative", overflow: "hidden" }}>
+    <div style={{ background: "#060614", minHeight: "100vh", position: "relative", overflow: "hidden" }}>
       {/*
         ── Full-page decorative background SVG ────────────────────────
         Using background-image with repeat-y so the pin/hook decoration

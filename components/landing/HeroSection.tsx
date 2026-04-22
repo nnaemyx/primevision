@@ -12,7 +12,7 @@ export default function HeroSection() {
       <div
         className="inline-flex items-center gap-3 px-5 py-3 rounded-full mb-12"
         style={{
-          background: "#0e0e52",
+          background: "#060614",
           border: "1px solid #150578",
           position: "relative",
           zIndex: 1,

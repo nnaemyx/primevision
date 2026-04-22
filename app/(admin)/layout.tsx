@@ -45,7 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#0e0e52" }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: "#060614" }}>
       {/* Admin sidebar */}
       <aside
         className="w-[220px] shrink-0 flex flex-col justify-between m-3 rounded-[20px] p-5"

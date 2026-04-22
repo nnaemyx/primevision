@@ -77,7 +77,7 @@ export default function SignupPage() {
 
   if (step === "otp") {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0e0e52" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#060614" }}>
         <div className="w-full max-w-[480px] rounded-[20px] p-12" style={{ background: "#150578" }}>
           <h1 style={{ fontFamily: "Satoshi", fontSize: "40px", fontWeight: 400, color: "#fff", marginBottom: "12px" }}>Verify Email</h1>
           <p style={{ fontFamily: "Satoshi", fontSize: "16px", color: "#cdcacc", marginBottom: "32px" }}>
@@ -105,7 +105,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex overflow-hidden relative" style={{ background: "#0e0e52" }}>
+    <div className="min-h-screen flex overflow-hidden relative" style={{ background: "#060614" }}>
       {/* Left panel */}
       <div className="hidden lg:flex flex-col px-12 py-14 relative" style={{ width: "42%", flexShrink: 0 }}>
         <Link href="/" className="block mb-6" style={{ fontFamily: "Satoshi", fontSize: "26px", fontWeight: 700, color: "#fff" }}>

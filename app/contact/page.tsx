@@ -40,7 +40,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div style={{ background: "#0e0e52", minHeight: "100vh" }}>
+    <div style={{ background: "#060614", minHeight: "100vh" }}>
       <Navbar />
       <main className="pt-40 pb-20 px-6 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">

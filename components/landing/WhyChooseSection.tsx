@@ -25,7 +25,7 @@ const features = [
 
 export default function WhyChooseSection() {
   return (
-    <section id="about" className="py-24 px-6" style={{ background: "#0e0e52" }}>
+    <section id="about" className="py-24 px-6" style={{ background: "#060614" }}>
       <div className="max-w-6xl mx-auto">
         <h2
           className="text-center text-white mb-16"

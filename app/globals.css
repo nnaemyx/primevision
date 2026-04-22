@@ -64,23 +64,23 @@
 
 :root {
   /* Brand palette */
-  --bg-app:         #0e0e52;
+  --bg-app:         #060614;
   --bg-card:        #150578;
   --accent-gold:    #e9d758;
   --accent-orange:  #f5a623;
   --accent-orange2: #f77f00;
   --text-muted:     #cdcacc;
-  --text-on-gold:   #0e0e52;
+  --text-on-gold:   #060614;
 
   /* shadcn tokens remapped to brand */
-  --background:               #0e0e52;
+  --background:               #060614;
   --foreground:               #ffffff;
   --card:                     #150578;
   --card-foreground:          #ffffff;
   --popover:                  #150578;
   --popover-foreground:       #ffffff;
   --primary:                  #e9d758;
-  --primary-foreground:       #0e0e52;
+  --primary-foreground:       #060614;
   --secondary:                #1a0b8c;
   --secondary-foreground:     #ffffff;
   --muted:                    #1e126a;
@@ -103,9 +103,9 @@
   --sidebar:                      #150578;
   --sidebar-foreground:           #ffffff;
   --sidebar-primary:              #e9d758;
-  --sidebar-primary-foreground:   #0e0e52;
+  --sidebar-primary-foreground:   #060614;
   --sidebar-accent:               #e9d758;
-  --sidebar-accent-foreground:    #0e0e52;
+  --sidebar-accent-foreground:    #060614;
   --sidebar-border:               rgba(255,255,255,0.08);
   --sidebar-ring:                 #e9d758;
 
@@ -114,7 +114,7 @@
 
 /* Always dark — no separate .dark block needed */
 .dark {
-  --background: #0e0e52;
+  --background: #060614;
   --foreground: #ffffff;
 }
 

@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="px-6 pb-6 pt-0" style={{ background: "#0e0e52" }}>
+    <footer className="px-6 pb-6 pt-0" style={{ background: "#060614" }}>
       <div
         className="max-w-6xl mx-auto rounded-[20px] px-10 py-12"
         style={{ background: "#150578" }}

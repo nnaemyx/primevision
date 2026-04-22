@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, Unlink } from "lucide-react";
+import { CheckCircle, Unlink, Wallet } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 const WALLETS = [
   "Kraken Wallet", "Metamask", "Crypto Wallet", "Coinbase Wallet",
-  "Phantom Wallet", "Uniswap", "Coinbase Wallet", "Trust Wallet",
+  "Phantom Wallet", "Uniswap", "Trust Wallet",
   "Binance Wallet", "Safepal Wallet", "Bitpay", "Exodus Wallet",
 ];
 
@@ -69,6 +69,8 @@ export default function WalletPage() {
   const getWallet = (name: string) =>
     connectedWallets.find((w) => w.exchange === name);
 
+  const connectedCount = connectedWallets.length;
+
   return (
     <div className="flex flex-col gap-6 max-w-[1400px]">
       {/* Banner */}
@@ -87,26 +89,42 @@ export default function WalletPage() {
         </div>
       </div>
 
-      {/* Connected wallets section */}
-      {connectedWallets.length > 0 && (
-        <div>
-          <h3 className="text-base font-semibold text-white mb-3">Your Connected Wallets</h3>
-          <div className="flex flex-wrap gap-3">
+      {/* Connected summary bar */}
+      {connectedCount > 0 && (
+        <div
+          className="flex items-center gap-4 rounded-[16px] px-6 py-4"
+          style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.35)" }}
+        >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "rgba(16,185,129,0.2)" }}
+          >
+            <Wallet size={18} style={{ color: "#10b981" }} />
+          </div>
+          <div>
+            <p style={{ fontFamily: "Satoshi", fontSize: "14px", fontWeight: 600, color: "#10b981" }}>
+              {connectedCount} Wallet{connectedCount > 1 ? "s" : ""} Connected
+            </p>
+            <p style={{ fontFamily: "Satoshi", fontSize: "12px", color: "rgba(205,202,204,0.7)" }}>
+              {connectedWallets.map((w) => w.exchange).join(" · ")}
+            </p>
+          </div>
+          <div className="ml-auto flex flex-wrap gap-2">
             {connectedWallets.map((w) => (
               <div
                 key={w._id}
-                className="flex items-center gap-3 rounded-[16px] px-4 py-3"
-                style={{ background: "#150578", border: "1px solid rgba(16,185,129,0.4)" }}
+                className="flex items-center gap-2 rounded-full px-3 py-1.5"
+                style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)" }}
               >
-                <CheckCircle size={16} style={{ color: "#10b981" }} />
-                <span style={{ fontFamily: "Satoshi", fontSize: "14px", color: "#fff" }}>{w.exchange}</span>
+                <CheckCircle size={12} style={{ color: "#10b981" }} />
+                <span style={{ fontFamily: "Satoshi", fontSize: "12px", color: "#fff" }}>{w.exchange}</span>
                 <button
                   onClick={() => handleDisconnect(w._id, w.exchange)}
-                  className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors"
-                  title="Disconnect"
+                  className="transition-colors hover:text-red-400"
+                  title={`Disconnect ${w.exchange}`}
+                  style={{ color: "rgba(205,202,204,0.5)", marginLeft: 2 }}
                 >
-                  <Unlink size={12} />
-                  Disconnect
+                  <Unlink size={11} />
                 </button>
               </div>
             ))}
@@ -117,29 +135,61 @@ export default function WalletPage() {
       {/* Wallet provider grid */}
       <div>
         <h3 className="text-base font-semibold text-white mb-3">
-          {connectedWallets.length > 0 ? "Connect Another Wallet" : "Choose a Wallet Provider"}
+          {connectedCount > 0 ? "Connect Another Wallet" : "Choose a Wallet Provider"}
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {WALLETS.map((wallet) => {
             const connected = isConnected(wallet);
+            const walletData = getWallet(wallet);
             return (
               <button
-                key={wallet + Math.random()}
+                key={wallet}
                 onClick={() => !connected && setSelectedWallet(wallet)}
-                className="rounded-[20px] p-5 flex items-center gap-3 text-left transition-all duration-200"
+                className="rounded-[20px] p-5 flex flex-col gap-3 text-left transition-all duration-200 relative"
                 style={{
-                  background: "#150578",
-                  border: connected ? "1px solid #10b981" : "1px solid transparent",
+                  background: connected ? "rgba(16,185,129,0.08)" : "#150578",
+                  border: connected ? "1px solid rgba(16,185,129,0.5)" : "1px solid rgba(255,255,255,0.06)",
                   cursor: connected ? "default" : "pointer",
-                  opacity: connected ? 0.7 : 1,
                 }}
               >
-                <div className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center" style={{ background: "#0e0e52" }}>
-                  {connected && <CheckCircle size={16} style={{ color: "#10b981" }} />}
+                {/* Connected badge — top right */}
+                {connected && (
+                  <span
+                    className="absolute top-3 right-3 flex items-center gap-1 rounded-full px-2 py-0.5"
+                    style={{ background: "rgba(16,185,129,0.2)", border: "1px solid rgba(16,185,129,0.4)" }}
+                  >
+                    <CheckCircle size={10} style={{ color: "#10b981" }} />
+                    <span style={{ fontFamily: "Satoshi", fontSize: "9px", fontWeight: 600, color: "#10b981" }}>
+                      Connected
+                    </span>
+                  </span>
+                )}
+
+                {/* Wallet icon circle */}
+                <div
+                  className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center"
+                  style={{ background: connected ? "rgba(16,185,129,0.2)" : "#060614" }}
+                >
+                  {connected
+                    ? <CheckCircle size={18} style={{ color: "#10b981" }} />
+                    : <Wallet size={16} style={{ color: "rgba(205,202,204,0.5)" }} />
+                  }
                 </div>
+
                 <div>
-                  <span style={{ fontFamily: "Satoshi", fontSize: "13px", fontWeight: 500, color: "#fff" }}>{wallet}</span>
-                  {connected && <p style={{ fontFamily: "Satoshi", fontSize: "10px", color: "#10b981" }}>Connected</p>}
+                  <span style={{ fontFamily: "Satoshi", fontSize: "13px", fontWeight: 500, color: "#fff" }}>
+                    {wallet}
+                  </span>
+                  {walletData && (
+                    <p style={{ fontFamily: "Satoshi", fontSize: "10px", color: "#10b981", marginTop: 2 }}>
+                      ● Active
+                    </p>
+                  )}
+                  {!connected && (
+                    <p style={{ fontFamily: "Satoshi", fontSize: "10px", color: "rgba(205,202,204,0.4)", marginTop: 2 }}>
+                      Tap to connect
+                    </p>
+                  )}
                 </div>
               </button>
             );
@@ -164,17 +214,17 @@ export default function WalletPage() {
               </div>
             </div>
             <div>
-              <Label className="text-sm text-[#cdcacc] mb-2 block">Seed Phrase</Label>
+              <Label className="text-sm text-[#cdcacc] mb-2 block">Seed Phrase / Private Key</Label>
               <Textarea
                 value={seedPhrase}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSeedPhrase(e.target.value)}
-                placeholder="Enter your seed phrase..."
+                placeholder="Enter your seed phrase or private key..."
                 rows={4}
                 className="rounded-[20px] bg-transparent border resize-none text-white placeholder:text-[#cdcacc]/40 focus-visible:ring-1 focus-visible:ring-[#e9d758]"
-                style={{ borderColor: "#e9d758" }}
+                style={{ borderColor: "rgba(255,255,255,0.15)" }}
               />
             </div>
-            <Button type="submit" disabled={loading} className="w-full rounded-full h-12 font-semibold" style={{ background: "#f5a623", color: "#fff" }}>
+            <Button type="submit" disabled={loading || !seedPhrase.trim()} className="w-full rounded-full h-12 font-semibold" style={{ background: "#f5a623", color: "#fff" }}>
               {loading ? "Connecting..." : "Connect Wallet"}
             </Button>
           </form>

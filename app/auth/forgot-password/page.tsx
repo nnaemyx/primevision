@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0e0e52" }}>
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#060614" }}>
       <div className="w-full max-w-[480px] rounded-[20px] p-10" style={{ background: "#150578" }}>
         <Link href="/" className="text-xl font-bold text-white block mb-8">
           PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>

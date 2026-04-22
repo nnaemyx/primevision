@@ -80,7 +80,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden relative" style={{ background: "#0e0e52" }}>
+    <div className="min-h-screen flex overflow-hidden relative" style={{ background: "#060614" }}>
       {/* ── Left panel ── */}
       <div
         className="hidden lg:flex flex-col px-12 py-14 relative"

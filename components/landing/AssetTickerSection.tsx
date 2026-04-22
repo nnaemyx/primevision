@@ -14,7 +14,7 @@ export default function AssetTickerSection() {
   const doubled = [...assets, ...assets, ...assets, ...assets];
 
   return (
-    <section className="py-24 px-6 text-center overflow-hidden" style={{ background: "#0e0e52" }}>
+    <section className="py-24 px-6 text-center overflow-hidden" style={{ background: "#060614" }}>
       <p
         className="mb-14 mx-auto"
         style={{
@@ -58,11 +58,11 @@ export default function AssetTickerSection() {
         {/* Fade edges */}
         <div
           className="absolute inset-y-0 left-0 w-24 pointer-events-none"
-          style={{ background: "linear-gradient(to right, #0e0e52, transparent)" }}
+          style={{ background: "linear-gradient(to right, #060614, transparent)" }}
         />
         <div
           className="absolute inset-y-0 right-0 w-24 pointer-events-none"
-          style={{ background: "linear-gradient(to left, #0e0e52, transparent)" }}
+          style={{ background: "linear-gradient(to left, #060614, transparent)" }}
         />
       </div>
 

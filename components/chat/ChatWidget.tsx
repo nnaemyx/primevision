@@ -79,7 +79,7 @@ export default function ChatWidget() {
       {/* Chat panel */}
       {open && (
         <div
-          className="fixed bottom-[88px] right-5 z-50 flex flex-col rounded-[20px] overflow-hidden shadow-2xl"
+          className="fixed bottom-[156px] md:bottom-[88px] right-5 z-50 flex flex-col rounded-[20px] overflow-hidden shadow-2xl"
           style={{
             width: "320px",
             height: "420px",
@@ -90,14 +90,14 @@ export default function ChatWidget() {
           {/* Header */}
           <div
             className="flex items-center justify-between px-4 py-3 shrink-0"
-            style={{ background: "#0e0e52", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+            style={{ background: "#060614", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
           >
             <div className="flex items-center gap-2">
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center"
                 style={{ background: "#e9d758" }}
               >
-                <MessageSquare size={14} style={{ color: "#0e0e52" }} />
+                <MessageSquare size={14} style={{ color: "#060614" }} />
               </div>
               <div>
                 <p style={{ fontFamily: "Satoshi", fontSize: "13px", fontWeight: 600, color: "#fff" }}>
@@ -167,7 +167,7 @@ export default function ChatWidget() {
               className="flex items-center justify-center rounded-full shrink-0 transition-all hover:scale-105 disabled:opacity-50"
               style={{ width: "32px", height: "32px", background: "#e9d758" }}
             >
-              <Send size={14} style={{ color: "#0e0e52" }} />
+              <Send size={14} style={{ color: "#060614" }} />
             </button>
           </div>
         </div>
@@ -176,7 +176,7 @@ export default function ChatWidget() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full transition-all hover:scale-105"
+        className="fixed bottom-[84px] md:bottom-5 right-5 z-50 flex items-center gap-3 rounded-full transition-all hover:scale-105"
         style={{
           background: "#150578",
           padding: "12px 20px 12px 20px",

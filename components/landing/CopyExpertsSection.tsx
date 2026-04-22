@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function CopyExpertsSection() {
   return (
-    <section className="py-24 px-6" style={{ background: "#0e0e52" }}>
+    <section className="py-24 px-6" style={{ background: "#060614" }}>
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left */}
@@ -77,7 +77,7 @@ export default function CopyExpertsSection() {
           </div>
 
           {/* Right — photo */}
-          <div className="relative h-[440px] rounded-[20px] overflow-hidden">
+          <div className="relative h-[649px] rounded-[20px] overflow-hidden">
             <img
               src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=700&q=80"
               alt="Expert trader at work"

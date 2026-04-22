@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div
       className="flex h-screen w-full overflow-hidden"
-      style={{ background: "#0e0e52", padding: "12px", gap: "12px" }}
+      style={{ background: "#060614", padding: "12px", gap: "12px" }}
     >
       {/* Sidebar — hidden on mobile */}
       <div className="hidden md:block shrink-0">

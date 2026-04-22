@@ -29,7 +29,7 @@ const cards = [
 
 export default function AboutPage() {
   return (
-    <div style={{ background: "#0e0e52", minHeight: "100vh" }}>
+    <div style={{ background: "#060614", minHeight: "100vh" }}>
       <Navbar />
       <main className="pt-40 pb-20 px-6 max-w-6xl mx-auto">
         {/* Who we are */}

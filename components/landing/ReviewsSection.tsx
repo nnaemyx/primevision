@@ -62,7 +62,7 @@ export default function ReviewsSection() {
   };
 
   return (
-    <section className="py-24 px-6 overflow-hidden" style={{ background: "#0e0e52" }}>
+    <section className="py-24 px-6 overflow-hidden" style={{ background: "#060614" }}>
       <div className="max-w-6xl mx-auto">
         {/* Heading */}
         <div className="text-center mb-14">
