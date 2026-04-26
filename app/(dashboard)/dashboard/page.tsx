@@ -9,14 +9,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import api from "@/lib/api";
 import { PortfolioBalance, Transaction } from "@/lib/types";
 
-const mockDistribution = { stocks: 5685, futures: 340, crypto: 960 };
+const mockDistribution = { stocks: 0, futures: 0, crypto: 0 };
 const mockGrowthData = [
-  { month: "Jan", value: 420 }, { month: "Feb", value: 480 },
-  { month: "Mar", value: 530 }, { month: "Apr", value: 510 },
-  { month: "May", value: 590 }, { month: "Jun", value: 640 },
-  { month: "Jul", value: 700 }, { month: "Aug", value: 730 },
-  { month: "Sep", value: 770 }, { month: "Oct", value: 800 },
-  { month: "Nov", value: 820 }, { month: "Dec", value: 870 },
+  { month: "Jan", value: 0 }, { month: "Feb", value: 0 },
+  { month: "Mar", value: 0 }, { month: "Apr", value: 0 },
+  { month: "May", value: 0 }, { month: "Jun", value: 0 },
+  { month: "Jul", value: 0 }, { month: "Aug", value: 0 },
+  { month: "Sep", value: 0 }, { month: "Oct", value: 0 },
+  { month: "Nov", value: 0 }, { month: "Dec", value: 0 },
 ];
 
 export default function DashboardPage() {
@@ -45,9 +45,9 @@ export default function DashboardPage() {
   });
 
   const portfolioBalance: PortfolioBalance = balance ?? {
-    balance: 7000,
-    pnlValue: 100,
-    pnlPercent: 50,
+    balance: 0,
+    pnlValue: 0,
+    pnlPercent: 0,
     distribution: mockDistribution,
   };
 

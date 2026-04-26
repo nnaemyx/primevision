@@ -3,13 +3,13 @@ import { useState } from "react";
 import TradingViewWidget from "@/components/trading/TradingViewWidget";
 
 const FUTURES = [
-  { symbol: "NQ", label: "NQ", name: "E-mini Nasdaq-100 Futures", tvSymbol: "CME_MINI:NQ1!", price: 26756 },
-  { symbol: "ES", label: "ES", name: "E-mini S&P 500 Futures", tvSymbol: "CME_MINI:ES1!", price: 5248 },
-  { symbol: "MES", label: "MES", name: "Micro E-mini S&P 500 Index", tvSymbol: "CME_MINI:MES1!", price: 5245 },
-  { symbol: "GC", label: "GC", name: "Gold Futures.", tvSymbol: "COMEX:GC1!", price: 2342 },
-  { symbol: "MGC", label: "MGC", name: "Micro gold futures", tvSymbol: "COMEX:MGC1!", price: 2340 },
-  { symbol: "CL", label: "CL", name: "Crude oil futures", tvSymbol: "NYMEX:CL1!", price: 78.4 },
-  { symbol: "NIFTY", label: "NIFTY", name: "GIFT NIFTY 50 INDEX", tvSymbol: "NSE:NIFTY", price: 22150 },
+  { symbol: "NQ",    label: "NQ",    name: "E-mini Nasdaq-100 Futures",  tvSymbol: "FOREXCOM:NSXUSD",  price: 26756 },
+  { symbol: "ES",    label: "ES",    name: "E-mini S&P 500 Futures",     tvSymbol: "FOREXCOM:SPXUSD",  price: 5248  },
+  { symbol: "MES",   label: "MES",   name: "Micro E-mini S&P 500 Index", tvSymbol: "FOREXCOM:SPXUSD",  price: 5245  },
+  { symbol: "GC",    label: "GC",    name: "Gold Futures",               tvSymbol: "TVC:GOLD",         price: 2342  },
+  { symbol: "MGC",   label: "MGC",   name: "Micro Gold Futures",         tvSymbol: "TVC:GOLD",         price: 2340  },
+  { symbol: "CL",    label: "CL",    name: "Crude Oil Futures",          tvSymbol: "TVC:USOIL",        price: 78.4  },
+  { symbol: "NIFTY", label: "NIFTY", name: "GIFT Nifty 50 Index",        tvSymbol: "NSE:NIFTY",        price: 22150 },
 ];
 
 const TIME_PERIODS = ["1M", "3M", "1Y", "5Y", "All"];

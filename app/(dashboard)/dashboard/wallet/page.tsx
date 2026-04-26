@@ -13,6 +13,7 @@ const WALLETS = [
   "Kraken Wallet", "Metamask", "Crypto Wallet", "Coinbase Wallet",
   "Phantom Wallet", "Uniswap", "Trust Wallet",
   "Binance Wallet", "Safepal Wallet", "Bitpay", "Exodus Wallet",
+  "Monopay",
 ];
 
 interface ConnectedWallet {
