@@ -50,10 +50,9 @@ export default function TraderCard({ trader }: { trader: CopyTrader }) {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { label: "ROI (30D)", value: `${trader.roi30d}%` },
-            { label: "Total Profit", value: `+${trader.totalProfit.toLocaleString()}` },
             { label: "Win Ratio", value: `${trader.winRatio}%` },
           ].map((s) => (
             <div key={s.label}>
