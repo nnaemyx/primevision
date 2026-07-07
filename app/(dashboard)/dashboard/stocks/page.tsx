@@ -1,6 +1,11 @@
 "use client";
 import { useState } from "react";
 import TradingViewWidget from "@/components/trading/TradingViewWidget";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { toast } from "sonner";
+import { PortfolioBalance, Trade } from "@/lib/types";
+import OrderTabs from "@/components/trading/OrderTabs";
 
 const STOCKS = [
   { symbol: "AAL", name: "American Airlines Group, Inc.", tvSymbol: "NASDAQ:AAL", price: 12.40 },
@@ -22,10 +27,62 @@ const ss: React.CSSProperties = { fontFamily: "Satoshi, sans-serif" };
 const CARD = { background: "#150578", borderRadius: "20px" };
 
 export default function StocksPage() {
+  const queryClient = useQueryClient();
   const [selected, setSelected] = useState(STOCKS[3]);
   const [period, setPeriod] = useState("1M");
   const [search, setSearch] = useState("");
   const [amount, setAmount] = useState("");
+
+  const { data: balanceData } = useQuery<PortfolioBalance>({
+    queryKey: ["portfolio-balance"],
+    queryFn: async () => {
+      const { data } = await api.get("/portfolio/balance");
+      return data;
+    },
+  });
+  
+  const availableBalance = balanceData?.distribution?.stocks || 0;
+
+  const { data: openOrders = [] } = useQuery<Trade[]>({
+    queryKey: ["trades-open"],
+    queryFn: async () => {
+      const { data } = await api.get("/trades/open");
+      return data;
+    },
+  });
+
+  const { data: filledOrders = [] } = useQuery<Trade[]>({
+    queryKey: ["trades-filled"],
+    queryFn: async () => {
+      const { data } = await api.get("/trades/filled");
+      return data;
+    },
+  });
+
+  const { data: tradeHistory = [] } = useQuery<Trade[]>({
+    queryKey: ["trades-history", "stocks"],
+    queryFn: async () => {
+      const { data } = await api.get("/trades/history?market=stocks");
+      return data;
+    },
+  });
+
+  const tradeMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const { data } = await api.post("/trades/execute", payload);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success(`Successfully bought ${selected.symbol}`);
+      setAmount("");
+      queryClient.invalidateQueries({ queryKey: ["portfolio-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["trades-open"] });
+      queryClient.invalidateQueries({ queryKey: ["trades-history", "stocks"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to execute trade");
+    },
+  });
 
   const filtered = STOCKS.filter(
     (s) =>
@@ -34,6 +91,21 @@ export default function StocksPage() {
   );
 
   const estimated = amount ? (parseFloat(amount) / selected.price).toFixed(4) : "0.00";
+
+  const handleExecute = () => {
+    if (!amount || parseFloat(amount) <= 0) return toast.error("Enter a valid amount");
+    if (parseFloat(amount) > availableBalance) return toast.error("Insufficient allocated stocks balance");
+    
+    tradeMutation.mutate({
+      symbol: selected.symbol,
+      market: "stocks",
+      type: "market",
+      side: "long",
+      price: selected.price,
+      amount: parseFloat(amount),
+      quantity: parseFloat(estimated),
+    });
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px", paddingBottom: "8px" }}>
@@ -178,7 +250,10 @@ export default function StocksPage() {
 
         {/* Buy panel */}
         <div style={{ ...CARD, flex: "1 1 200px", padding: "20px", minWidth: 0 }}>
-          <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", textAlign: "center", marginBottom: 12 }}>Buy {selected.symbol}</p>
+          <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", textAlign: "center", marginBottom: 4 }}>Buy {selected.symbol}</p>
+          <p style={{ ...ss, fontSize: 11, color: "#cdcacc", textAlign: "center", marginBottom: 12 }}>
+            Allocated Balance: <span style={{ color: "#e9d758", fontWeight: 700 }}>${availableBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+          </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ ...ss, fontSize: 11, color: "#cdcacc" }}>Order Type</span>
@@ -199,27 +274,24 @@ export default function StocksPage() {
               <span style={{ ...ss, fontSize: 11, color: "#cdcacc" }}>Estimated shares</span>
               <span style={{ ...ss, fontSize: 11, fontWeight: 700, color: "#fff" }}>{estimated} {selected.symbol}</span>
             </div>
-            <button style={{ width: "100%", height: 36, borderRadius: 100, background: "#f5a623", color: "#fff", ...ss, fontSize: 12, border: "none", cursor: "pointer", marginTop: 4 }}>
-              Execute Order
+            <button 
+              onClick={handleExecute}
+              disabled={tradeMutation.isPending}
+              style={{ width: "100%", height: 36, borderRadius: 100, background: "#f5a623", color: "#fff", ...ss, fontSize: 12, border: "none", cursor: "pointer", marginTop: 4, opacity: tradeMutation.isPending ? 0.6 : 1 }}
+            >
+              {tradeMutation.isPending ? "Executing..." : "Execute Order"}
             </button>
           </div>
         </div>
       </div>
 
       {/* ── ROW 3: Trade History ──────────────────────────────────────── */}
-      <div style={{ ...CARD, padding: "20px" }}>
-        <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", marginBottom: 12 }}>Stock Trade History</p>
-        <div className="scrollbar-hidden" style={{ overflowX: "auto" }}>
-          <div style={{ display: "flex", gap: 32, paddingBottom: 12, borderBottom: "1px solid rgba(255,255,255,0.08)", minWidth: "max-content" }}>
-            {["Reference", "Execution Time", "Symbol", "Side", "Price", "Volume"].map((h) => (
-              <span key={h} style={{ ...ss, fontSize: 12, fontWeight: 500, color: "#cdcacc" }}>{h}</span>
-            ))}
-          </div>
-        </div>
-        <p style={{ ...ss, fontSize: 11, color: "#cdcacc", textAlign: "center", padding: "24px 0 0", margin: 0 }}>
-          You have no active Stock positions
-        </p>
-      </div>
+      <OrderTabs
+        openOrders={openOrders}
+        filledOrders={filledOrders}
+        tradeHistory={tradeHistory}
+        market="stocks"
+      />
     </div>
   );
 }

@@ -1,15 +1,25 @@
 "use client";
 import { useState } from "react";
 import TradingViewWidget from "@/components/trading/TradingViewWidget";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { toast } from "sonner";
+import { PortfolioBalance, Trade } from "@/lib/types";
+import OrderTabs from "@/components/trading/OrderTabs";
 
 const FUTURES = [
-  { symbol: "NQ",    label: "NQ",    name: "E-mini Nasdaq-100 Futures",  tvSymbol: "FOREXCOM:NSXUSD",  price: 26756 },
-  { symbol: "ES",    label: "ES",    name: "E-mini S&P 500 Futures",     tvSymbol: "FOREXCOM:SPXUSD",  price: 5248  },
-  { symbol: "MES",   label: "MES",   name: "Micro E-mini S&P 500 Index", tvSymbol: "FOREXCOM:SPXUSD",  price: 5245  },
-  { symbol: "GC",    label: "GC",    name: "Gold Futures",               tvSymbol: "TVC:GOLD",         price: 2342  },
-  { symbol: "MGC",   label: "MGC",   name: "Micro Gold Futures",         tvSymbol: "TVC:GOLD",         price: 2340  },
-  { symbol: "CL",    label: "CL",    name: "Crude Oil Futures",          tvSymbol: "TVC:USOIL",        price: 78.4  },
-  { symbol: "NIFTY", label: "NIFTY", name: "GIFT Nifty 50 Index",        tvSymbol: "NSE:NIFTY",        price: 22150 },
+  { symbol: "ES", label: "E-mini S&P 500", price: 5120.25 },
+  { symbol: "NQ", label: "E-mini NASDAQ 100", price: 18050.50 },
+  { symbol: "YM", label: "E-mini Dow", price: 38900 },
+  { symbol: "RTY", label: "E-mini Russell 2000", price: 2050.10 },
+  { symbol: "CL", label: "Crude Oil", price: 78.50 },
+  { symbol: "GC", label: "Gold", price: 2150.80 },
+  { symbol: "SI", label: "Silver", price: 24.30 },
+  { symbol: "HG", label: "Copper", price: 3.95 },
+  { symbol: "NG", label: "Natural Gas", price: 1.85 },
+  { symbol: "ZC", label: "Corn", price: 430.25 },
+  { symbol: "ZW", label: "Wheat", price: 540.50 },
+  { symbol: "ZS", label: "Soybeans", price: 1180.75 },
 ];
 
 const TIME_PERIODS = ["1M", "3M", "1Y", "5Y", "All"];
@@ -17,18 +27,85 @@ const ss: React.CSSProperties = { fontFamily: "Satoshi, sans-serif" };
 const CARD = { background: "#150578", borderRadius: "20px" };
 
 export default function FuturesPage() {
+  const queryClient = useQueryClient();
   const [selected, setSelected] = useState(FUTURES[0]);
   const [period, setPeriod] = useState("1M");
   const [search, setSearch] = useState("");
   const [amount, setAmount] = useState("");
 
+  const { data: balanceData } = useQuery<PortfolioBalance>({
+    queryKey: ["portfolio-balance"],
+    queryFn: async () => {
+      const { data } = await api.get("/portfolio/balance");
+      return data;
+    },
+  });
+  
+  const availableBalance = balanceData?.distribution?.futures || 0;
+
+  const { data: openOrders = [] } = useQuery<Trade[]>({
+    queryKey: ["trades-open"],
+    queryFn: async () => {
+      const { data } = await api.get("/trades/open");
+      return data;
+    },
+  });
+
+  const { data: filledOrders = [] } = useQuery<Trade[]>({
+    queryKey: ["trades-filled"],
+    queryFn: async () => {
+      const { data } = await api.get("/trades/filled");
+      return data;
+    },
+  });
+
+  const { data: tradeHistory = [] } = useQuery<Trade[]>({
+    queryKey: ["trades-history", "futures"],
+    queryFn: async () => {
+      const { data } = await api.get("/trades/history?market=futures");
+      return data;
+    },
+  });
+
+  const tradeMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const { data } = await api.post("/trades/execute", payload);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success(`Successfully bought ${selected.label}`);
+      setAmount("");
+      queryClient.invalidateQueries({ queryKey: ["portfolio-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["trades-open"] });
+      queryClient.invalidateQueries({ queryKey: ["trades-history", "futures"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to execute trade");
+    },
+  });
+
   const filtered = FUTURES.filter(
     (f) =>
-      f.label.toLowerCase().includes(search.toLowerCase()) ||
-      f.name.toLowerCase().includes(search.toLowerCase())
+      f.symbol.toLowerCase().includes(search.toLowerCase()) ||
+      f.label.toLowerCase().includes(search.toLowerCase())
   );
 
   const estimated = amount ? (parseFloat(amount) / selected.price).toFixed(4) : "0.00";
+
+  const handleExecute = () => {
+    if (!amount || parseFloat(amount) <= 0) return toast.error("Enter a valid amount");
+    if (parseFloat(amount) > availableBalance) return toast.error("Insufficient allocated futures balance");
+    
+    tradeMutation.mutate({
+      symbol: selected.symbol,
+      market: "futures",
+      type: "market",
+      side: "long",
+      price: selected.price,
+      amount: parseFloat(amount),
+      quantity: parseFloat(estimated),
+    });
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px", paddingBottom: "8px" }}>
@@ -39,13 +116,13 @@ export default function FuturesPage() {
         {/* Chart panel — grows to fill */}
         <div style={{ ...CARD, flex: "1 1 0", minWidth: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px 8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px 8px" }}>
             <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#0e0e52", flexShrink: 0 }} />
             <div style={{ minWidth: 0 }}>
-              <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", margin: 0 }}>{selected.name}</p>
+              <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", margin: 0 }}>{selected.label}</p>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ ...ss, fontFamily: "Space Grotesk, sans-serif", fontSize: 24, fontWeight: 500, color: "#fff" }}>
-                  {selected.price.toLocaleString()}
+                  {selected.price.toFixed(2)}
                 </span>
                 <span style={{ ...ss, fontSize: 10, color: "#cdcacc" }}>USD</span>
                 <span style={{ ...ss, fontSize: 12, fontWeight: 700, color: "#e9d758" }}>+5.81 &nbsp;+2.30 &nbsp;Past month</span>
@@ -72,24 +149,24 @@ export default function FuturesPage() {
 
           {/* Chart */}
           <div style={{ flex: 1, minHeight: 220 }}>
-            <TradingViewWidget symbol={selected.tvSymbol} height={380} />
+            <TradingViewWidget symbol={`CME_MINI:${selected.symbol}1!`} height={280} />
           </div>
         </div>
 
-        {/* Explore Futures panel — fixed width on desktop, hidden on mobile */}
+        {/* Explore panel — fixed width on desktop, hidden on mobile */}
         <div
           className="hidden lg:flex"
           style={{ ...CARD, width: 220, flexShrink: 0, flexDirection: "column", overflow: "hidden" }}
         >
           <div style={{ padding: "16px 16px 8px" }}>
-            <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", marginBottom: 8 }}>Explore</p>
+            <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", marginBottom: 8 }}>Explore Futures</p>
             <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 100, border: "1px solid #e9d758" }}>
               <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
                 <circle cx="5" cy="5" r="4" stroke="rgba(205,202,204,0.8)" strokeWidth="1.5" />
                 <path d="M9 9l2 2" stroke="rgba(205,202,204,0.8)" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
               <input
-                placeholder="Type to search Futures"
+                placeholder="Type to search..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={{ ...ss, fontSize: 10, color: "rgba(205,202,204,0.8)", background: "transparent", border: "none", outline: "none", flex: 1 }}
@@ -106,8 +183,8 @@ export default function FuturesPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#0e0e52", flexShrink: 0 }} />
                   <div>
-                    <p style={{ ...ss, fontSize: 11, fontWeight: 700, color: "#fff", lineHeight: "12px", margin: 0 }}>{f.label}</p>
-                    <p style={{ ...ss, fontSize: 9, color: "#cdcacc", lineHeight: "11px", maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", margin: 0 }}>{f.name}</p>
+                    <p style={{ ...ss, fontSize: 11, fontWeight: 700, color: "#fff", lineHeight: "12px", margin: 0 }}>{f.symbol}</p>
+                    <p style={{ ...ss, fontSize: 9, color: "#cdcacc", lineHeight: "11px", maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", margin: 0 }}>{f.label}</p>
                   </div>
                 </div>
                 <button style={{ ...ss, fontSize: 9, color: "#fff", background: "#f5a623", border: "none", borderRadius: 6, padding: "3px 7px", cursor: "pointer", flexShrink: 0 }}>Trade</button>
@@ -117,7 +194,7 @@ export default function FuturesPage() {
         </div>
       </div>
 
-      {/* Mobile-only Explore Futures — horizontal scrolling chip row */}
+      {/* Mobile-only Explore — horizontal scrolling chip row */}
       <div className="lg:hidden" style={{ ...CARD, padding: "12px 16px" }}>
         <p style={{ ...ss, fontSize: 13, fontWeight: 500, color: "#fff", marginBottom: 8 }}>Explore Futures</p>
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 100, border: "1px solid #e9d758", marginBottom: 10 }}>
@@ -126,7 +203,7 @@ export default function FuturesPage() {
             <path d="M9 9l2 2" stroke="rgba(205,202,204,0.8)" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
           <input
-            placeholder="Type to search Futures"
+            placeholder="Type to search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ ...ss, fontSize: 10, color: "rgba(205,202,204,0.8)", background: "transparent", border: "none", outline: "none", flex: 1 }}
@@ -144,8 +221,8 @@ export default function FuturesPage() {
                 border: "none",
               }}
             >
-              <span style={{ fontSize: 11, fontWeight: 700, color: selected.symbol === f.symbol ? "#0e0e52" : "#fff" }}>{f.label}</span>
-              <span style={{ fontSize: 9, color: selected.symbol === f.symbol ? "#0e0e52" : "#cdcacc", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: selected.symbol === f.symbol ? "#0e0e52" : "#fff" }}>{f.symbol}</span>
+              <span style={{ fontSize: 9, color: selected.symbol === f.symbol ? "#0e0e52" : "#cdcacc", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.label}</span>
             </button>
           ))}
         </div>
@@ -153,14 +230,14 @@ export default function FuturesPage() {
 
       {/* ── ROW 2: Holdings + Buy ───────────────────────────────────── */}
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        {/* Futures Holdings */}
+        {/* Holdings */}
         <div style={{ ...CARD, flex: "1 1 280px", padding: "20px" }}>
           <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", marginBottom: 16 }}>Futures Holdings</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 0" }}>
             {[
-              { label: "Shares", value: `0.00 ${selected.label}` },
-              { label: "Total Profit", value: "$0.00" },
-              { label: "Average Cost", value: "$0.00" },
+              { label: "Contracts", value: `0.00 ${selected.symbol}` },
+              { label: "Profit", value: "$0.00" },
+              { label: "Entry Price", value: "$0.00" },
               { label: "Today's Profit", value: "$0.00" },
             ].map((item) => (
               <div key={item.label}>
@@ -169,17 +246,14 @@ export default function FuturesPage() {
               </div>
             ))}
           </div>
-          {/* Profits row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-            <p style={{ ...ss, fontSize: 11, color: "#cdcacc", margin: 0 }}>Profits</p>
-            <p style={{ ...ss, fontSize: 11, color: "#cdcacc", margin: 0 }}>Nothing to see here</p>
-            <p style={{ ...ss, fontSize: 11, color: "#cdcacc", margin: 0 }}>Date Received</p>
-          </div>
         </div>
 
         {/* Buy panel */}
         <div style={{ ...CARD, flex: "1 1 200px", padding: "20px", minWidth: 0 }}>
-          <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", textAlign: "center", marginBottom: 12 }}>Buy {selected.label}</p>
+          <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", textAlign: "center", marginBottom: 4 }}>Buy {selected.label}</p>
+          <p style={{ ...ss, fontSize: 11, color: "#cdcacc", textAlign: "center", marginBottom: 12 }}>
+            Allocated Balance: <span style={{ color: "#e9d758", fontWeight: 700 }}>${availableBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+          </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ ...ss, fontSize: 11, color: "#cdcacc" }}>Order Type</span>
@@ -198,29 +272,26 @@ export default function FuturesPage() {
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ ...ss, fontSize: 11, color: "#cdcacc" }}>Estimated shares</span>
-              <span style={{ ...ss, fontSize: 11, fontWeight: 700, color: "#fff" }}>{estimated} {selected.label}</span>
+              <span style={{ ...ss, fontSize: 11, fontWeight: 700, color: "#fff" }}>{estimated} {selected.symbol}</span>
             </div>
-            <button style={{ width: "100%", height: 36, borderRadius: 100, background: "#f5a623", color: "#fff", ...ss, fontSize: 12, border: "none", cursor: "pointer", marginTop: 4 }}>
-              Execute Order
+            <button 
+              onClick={handleExecute}
+              disabled={tradeMutation.isPending}
+              style={{ width: "100%", height: 36, borderRadius: 100, background: "#f5a623", color: "#fff", ...ss, fontSize: 12, border: "none", cursor: "pointer", marginTop: 4, opacity: tradeMutation.isPending ? 0.6 : 1 }}
+            >
+              {tradeMutation.isPending ? "Executing..." : "Execute Order"}
             </button>
           </div>
         </div>
       </div>
 
       {/* ── ROW 3: Trade History ──────────────────────────────────────── */}
-      <div style={{ ...CARD, padding: "20px" }}>
-        <p style={{ ...ss, fontSize: 14, fontWeight: 500, color: "#fff", marginBottom: 12 }}>Futures Trade History</p>
-        <div className="scrollbar-hidden" style={{ overflowX: "auto" }}>
-          <div style={{ display: "flex", gap: 32, paddingBottom: 12, borderBottom: "1px solid rgba(255,255,255,0.08)", minWidth: "max-content" }}>
-            {["Reference", "Execution Time", "Symbol", "Side", "Price", "Volume"].map((h) => (
-              <span key={h} style={{ ...ss, fontSize: 12, fontWeight: 500, color: "#cdcacc" }}>{h}</span>
-            ))}
-          </div>
-        </div>
-        <p style={{ ...ss, fontSize: 11, color: "#cdcacc", textAlign: "center", padding: "24px 0 0", margin: 0 }}>
-          You have no active Futures positions
-        </p>
-      </div>
+      <OrderTabs
+        openOrders={openOrders}
+        filledOrders={filledOrders}
+        tradeHistory={tradeHistory}
+        market="futures"
+      />
     </div>
   );
 }

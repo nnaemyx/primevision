@@ -60,7 +60,11 @@ function OrdersTable({ orders }: { orders: Trade[] }) {
   );
 }
 
-export default function OrderTabs({ openOrders, filledOrders, tradeHistory }: Props) {
+export default function OrderTabs({ openOrders, filledOrders, tradeHistory, market }: Props) {
+  const filteredOpen = market ? openOrders.filter((o) => o.market === market) : openOrders;
+  const filteredFilled = market ? filledOrders.filter((o) => o.market === market) : filledOrders;
+  const filteredHistory = market ? tradeHistory.filter((o) => o.market === market) : tradeHistory;
+
   return (
     <div className="rounded-[20px] p-5" style={{ background: "#150578" }}>
       <Tabs defaultValue="open">
@@ -84,13 +88,13 @@ export default function OrderTabs({ openOrders, filledOrders, tradeHistory }: Pr
         </TabsList>
 
         <TabsContent value="open">
-          <OrdersTable orders={openOrders} />
+          <OrdersTable orders={filteredOpen} />
         </TabsContent>
         <TabsContent value="filled">
-          <OrdersTable orders={filledOrders} />
+          <OrdersTable orders={filteredFilled} />
         </TabsContent>
         <TabsContent value="history">
-          <OrdersTable orders={tradeHistory} />
+          <OrdersTable orders={filteredHistory} />
         </TabsContent>
       </Tabs>
     </div>

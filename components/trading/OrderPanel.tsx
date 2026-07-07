@@ -4,9 +4,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { Market } from "@/lib/types";
+import { Market, PortfolioBalance } from "@/lib/types";
 
 interface Props {
   symbol: string;
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function OrderPanel({ symbol, currentPrice, market, title, currency = "USDT" }: Props) {
+  const queryClient = useQueryClient();
   const [orderType, setOrderType] = useState<"market" | "limit">("market");
   const [amount, setAmount] = useState("");
   const [leverage, setLeverage] = useState("10");
@@ -24,6 +26,17 @@ export default function OrderPanel({ symbol, currentPrice, market, title, curren
   const [takeProfit, setTakeProfit] = useState("0.0");
   const [lockingPeriod, setLockingPeriod] = useState("2 hours");
   const [loading, setLoading] = useState<"long" | "short" | null>(null);
+
+  const { data: balanceData } = useQuery<PortfolioBalance>({
+    queryKey: ["portfolio-balance"],
+    queryFn: async () => {
+      const { data } = await api.get("/portfolio/balance");
+      return data;
+    },
+  });
+  
+  // Dynamically pull the specific market balance
+  const availableBalance = balanceData?.distribution?.[market] || 0;
 
   const triggerFee = parseFloat(amount || "0") * 0.001;
   const orderValue = parseFloat(amount || "0") / currentPrice;
@@ -33,6 +46,11 @@ export default function OrderPanel({ symbol, currentPrice, market, title, curren
       toast.error("Please enter a valid amount");
       return;
     }
+    if (parseFloat(amount) > availableBalance) {
+      toast.error(`Insufficient allocated ${market} balance`);
+      return;
+    }
+
     setLoading(side);
     try {
       await api.post("/trades/execute", {
@@ -50,6 +68,9 @@ export default function OrderPanel({ symbol, currentPrice, market, title, curren
       });
       toast.success(`${side === "long" ? "Long" : "Short"} order placed!`);
       setAmount("");
+      queryClient.invalidateQueries({ queryKey: ["portfolio-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["trades-open"] });
+      queryClient.invalidateQueries({ queryKey: ["trades-history", market] });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Order failed";
       toast.error(msg);
@@ -118,7 +139,9 @@ export default function OrderPanel({ symbol, currentPrice, market, title, curren
               />
               <span className="text-xs text-[#cdcacc]/60 shrink-0">{currency}</span>
             </div>
-            <p className={labelStyle + " mt-1"}>Acc Bal: $0.00</p>
+            <p className={labelStyle + " mt-1"}>
+              Allocated Balance: <span style={{ color: "#e9d758", fontWeight: 700 }}>${availableBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+            </p>
           </div>
 
           {/* TP / SL */}

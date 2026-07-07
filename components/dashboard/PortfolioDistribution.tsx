@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit2, Save, X } from "lucide-react";
 import api from "@/lib/api";
 import { toast } from "sonner";
@@ -18,7 +18,8 @@ const sections = [
 
 export default function PortfolioDistribution({ distribution }: Props) {
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState({
+  const queryClient = useQueryClient();
+  const [draft, setDraft] = useState<{ stocks: number | string; futures: number | string; crypto: number | string }>({
     stocks: distribution.stocks,
     futures: distribution.futures,
     crypto: distribution.crypto,
@@ -26,15 +27,16 @@ export default function PortfolioDistribution({ distribution }: Props) {
 
   const saveMutation = useMutation({
     mutationFn: async (payload: typeof draft) => {
-      // Persist allocation to backend (endpoint to be wired if needed)
-      await api.post("/portfolio/allocation", payload).catch(() => {});
+      const res = await api.post("/portfolio/allocation", payload);
+      return res.data;
     },
     onSuccess: () => {
       toast.success("Allocation saved");
+      queryClient.invalidateQueries({ queryKey: ["portfolio-balance"] });
       setEditing(false);
     },
     onError: () => {
-      toast.success("Allocation saved locally"); // graceful — endpoint optional
+      toast.error("Failed to save allocation");
       setEditing(false);
     },
   });
@@ -51,7 +53,10 @@ export default function PortfolioDistribution({ distribution }: Props) {
         <h3 className="text-lg font-semibold text-white">Portfolio Distribution</h3>
         {!editing ? (
           <button
-            onClick={() => setEditing(true)}
+            onClick={() => {
+              setDraft({ stocks: distribution.stocks, futures: distribution.futures, crypto: distribution.crypto });
+              setEditing(true);
+            }}
             className="flex items-center gap-1.5 text-xs rounded-full px-4 py-1.5 transition-all hover:bg-white/10"
             style={{ color: "#e9d758", border: "1px solid rgba(233,215,88,0.3)" }}
           >
@@ -107,7 +112,7 @@ export default function PortfolioDistribution({ distribution }: Props) {
                     min={0}
                     value={draft[s.key]}
                     onChange={(e) =>
-                      setDraft((prev) => ({ ...prev, [s.key]: parseFloat(e.target.value) || 0 }))
+                      setDraft((prev) => ({ ...prev, [s.key]: e.target.value === "" ? "" : parseFloat(e.target.value) }))
                     }
                     className="w-full bg-transparent outline-none border-b"
                     style={{
