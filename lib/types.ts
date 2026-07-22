@@ -73,6 +73,24 @@ export interface CopyTrader {
   topTrades: Array<{ symbol: string; profit: number }>;
 }
 
+export interface CopyTrade {
+  _id: string;
+  user: string | { _id: string; name: string; email: string };
+  trader: string | { _id: string; name: string };
+  traderName: string;
+  symbol: string;
+  side: TradeSide;
+  market: Market;
+  amount: number;
+  entryPrice: number;
+  currentPrice?: number;
+  pnl?: number;
+  status: TradeStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
 export interface PortfolioBalance {
   balance: number;
   pnlValue: number;

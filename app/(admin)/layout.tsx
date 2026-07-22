@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useHydrated } from "@/hooks/useHydrated";
 import Link from "next/link";
-import { LayoutDashboard, Users, ArrowLeftRight, TrendingUp, LogOut, Settings, Star, Wallet, Wallet2, Activity, MessageSquare, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, ArrowLeftRight, TrendingUp, LogOut, Settings, Star, Wallet, Wallet2, Activity, MessageSquare, Menu, X, Copy } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ const adminNavItems = [
   { label: "Transactions", href: "/admin/transactions", icon: ArrowLeftRight },
   { label: "Trades", href: "/admin/trades", icon: TrendingUp },
   { label: "Expert Traders", href: "/admin/traders", icon: Star },
+  { label: "Copied Trades", href: "/admin/copy-trades", icon: Copy },
   { label: "Wallets", href: "/admin/wallets", icon: Wallet },
   { label: "Deposit Addresses", href: "/admin/deposit-addresses", icon: Wallet2 },
   { label: "Login Activity", href: "/admin/activity", icon: Activity },
