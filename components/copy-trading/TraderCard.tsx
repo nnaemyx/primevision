@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,19 +33,9 @@ export default function TraderCard({ trader }: { trader: CopyTrader }) {
         style={{ background: "#150578" }}
       >
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0">
-            <Image
-              src={trader.avatar || "/images/trader-avatar.jpg"}
-              alt={trader.name}
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-white">{trader.name}</p>
-            <p className="text-xs text-[#cdcacc]">{trader.copiers} Copiers</p>
-          </div>
+        <div>
+          <p className="text-sm font-semibold text-white">{trader.name}</p>
+          <p className="text-xs text-[#cdcacc]">{trader.copiers} Copiers</p>
         </div>
 
         {/* Stats */}

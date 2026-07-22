@@ -1,6 +1,5 @@
 "use client";
 import { useParams } from "next/navigation";
-import Image from "next/image";
 import { Star, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +15,7 @@ import { useState } from "react";
 const MOCK_PERF = [
   { month: "Jan", value: 420 }, { month: "Feb", value: 510 }, { month: "Mar", value: 480 },
   { month: "Apr", value: 600 }, { month: "May", value: 650 }, { month: "Jun", value: 720 },
-  { month: "Jul", value: 780 }, { month: "Aug", value: 810 }, { month: "Sep", value: 880 },
+  { month: "Jul", value: 780 }, { month: "Aug", value: 880 }, { month: "Sep", value: 880 },
   { month: "Oct", value: 920 }, { month: "Nov", value: 960 }, { month: "Dec", value: 1000 },
 ];
 
@@ -80,17 +79,12 @@ export default function TraderDetailPage() {
 
       {/* Trader header */}
       <div className="rounded-[20px] p-6 flex items-center justify-between" style={{ background: "#150578" }}>
-        <div className="flex items-center gap-4">
-          <div className="relative w-14 h-14 rounded-full overflow-hidden shrink-0">
-            <Image src={t.avatar || "/images/trader-avatar.jpg"} alt={t.name} fill className="object-cover" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-white">{t.name}</h1>
-            <div className="flex items-center gap-1 mt-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={14} fill={i < t.rating ? "#e9d758" : "transparent"} style={{ color: "#e9d758" }} />
-              ))}
-            </div>
+        <div>
+          <h1 className="text-xl font-bold text-white">{t.name}</h1>
+          <div className="flex items-center gap-1 mt-1">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} size={14} fill={i < t.rating ? "#e9d758" : "transparent"} style={{ color: "#e9d758" }} />
+            ))}
           </div>
         </div>
         <Button
