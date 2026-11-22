@@ -24,31 +24,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) return null;
 
   return (
-    <div
-      className="flex h-screen w-full overflow-hidden"
-      style={{ background: "#060614", padding: "12px", gap: "12px" }}
-    >
-      {/* Sidebar — hidden on mobile */}
-      <div className="hidden md:block shrink-0">
-        <AppSidebar />
-      </div>
+    <>
+      <div
+        className="flex h-screen w-full overflow-hidden"
+        style={{ background: "#060614", padding: "12px", gap: "12px" }}
+      >
+        {/* Sidebar — hidden on mobile */}
+        <div className="hidden md:block shrink-0">
+          <AppSidebar />
+        </div>
 
-      {/* Main content area */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <AppHeader />
-        {/* Main scrollable area — extra bottom padding for mobile bottom nav */}
-        <main
-          className="flex-1 overflow-y-auto scrollbar-hidden"
-          style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 80 }}
-        >
-          {children}
-        </main>
-      </div>
+        {/* Main content area */}
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          <AppHeader />
+          {/* Main scrollable area — extra bottom padding for mobile bottom nav */}
+          <main
+            className="flex-1 overflow-y-auto scrollbar-hidden"
+            style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 80 }}
+          >
+            {children}
+          </main>
+        </div>
 
-      {/* Mobile bottom nav */}
-      <MobileBottomNav />
+        {/* Mobile bottom nav */}
+        <MobileBottomNav />
+      </div>
 
       <ChatWidget />
-    </div>
+    </>
   );
 }

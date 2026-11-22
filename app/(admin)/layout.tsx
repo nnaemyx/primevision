@@ -38,7 +38,7 @@ function SidebarContent({ pathname, onClose }: { pathname: string; onClose?: () 
       <div>
         <Link href="/admin" className="block mb-8" onClick={onClose}>
           <p className="text-xl font-bold text-white">
-            PrimeVision <span style={{ color: "#e9d758" }}>Admin</span>
+            ApexPrime <span style={{ color: "#e9d758" }}>Admin</span>
           </p>
         </Link>
         <nav className="flex flex-col gap-1">

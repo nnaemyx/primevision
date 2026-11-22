@@ -132,48 +132,76 @@ export default function CopyTradingPage() {
             <div className="rounded-[20px] overflow-hidden" style={{ background: "#150578" }}>
               {/* Table header */}
               <div
-                className="grid gap-3 px-5 py-3 text-xs font-medium text-[#cdcacc]"
-                style={{ gridTemplateColumns: "1fr 1fr 80px 80px 100px 90px 80px 80px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+                className="grid gap-3 px-5 py-3.5 text-xs font-semibold text-[#cdcacc] uppercase"
+                style={{ gridTemplateColumns: "1.2fr 1fr 80px 100px 100px 100px 110px 110px 80px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(6,6,20,0.5)" }}
               >
-                <span>Trader</span>
-                <span>Symbol</span>
+                <span>Trader Copied</span>
+                <span>Exact Trade</span>
                 <span>Side</span>
-                <span>Market</span>
-                <span>Amount</span>
-                <span>PnL</span>
+                <span>Allocated</span>
+                <span>Entry Price</span>
+                <span>Current Price</span>
+                <span>Exact Profit</span>
                 <span>Status</span>
                 <span>Date</span>
               </div>
               {myCopies.map((ct) => {
                 const pnl = ct.pnl ?? 0;
+                const entry = ct.entryPrice || 0;
+                const current = ct.closePrice || ct.currentPrice || entry;
+                const roi = ct.amount > 0 ? (pnl / ct.amount) * 100 : 0;
                 return (
                   <div
                     key={ct._id}
                     className="grid gap-3 px-5 py-4 items-center text-sm transition-colors hover:bg-white/5"
-                    style={{ gridTemplateColumns: "1fr 1fr 80px 80px 100px 90px 80px 80px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                    style={{ gridTemplateColumns: "1.2fr 1fr 80px 100px 100px 100px 110px 110px 80px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                   >
-                    <span className="text-white font-medium truncate">{ct.traderName}</span>
-                    <span className="text-white font-medium" style={{ fontFamily: "Space Grotesk" }}>{ct.symbol}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#e9d758] text-[#060614] flex items-center justify-center text-[10px] font-bold">C</span>
+                      <span className="text-white font-medium truncate">{ct.traderName}</span>
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold" style={{ fontFamily: "Space Grotesk" }}>{ct.symbol}</p>
+                      <p className="text-[10px] text-[#cdcacc]/60 uppercase">{ct.market}</p>
+                    </div>
                     <span
-                      className="text-xs font-semibold capitalize"
-                      style={{ color: ct.side === "long" ? "#10b981" : "#ef4444" }}
+                      className="text-xs font-bold capitalize px-2 py-0.5 rounded-full w-fit"
+                      style={{
+                        background: ct.side === "long" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+                        color: ct.side === "long" ? "#10b981" : "#ef4444",
+                      }}
                     >
                       {ct.side}
                     </span>
-                    <span className="text-[#cdcacc] capitalize">{ct.market}</span>
-                    <span className="text-white" style={{ fontFamily: "Space Grotesk" }}>${ct.amount.toLocaleString()}</span>
-                    <span
-                      className="font-semibold"
-                      style={{ color: pnl >= 0 ? "#10b981" : "#ef4444", fontFamily: "Space Grotesk" }}
-                    >
-                      {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
+                    <span className="text-white font-medium" style={{ fontFamily: "Space Grotesk" }}>
+                      ${ct.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
+                    <span className="text-[#cdcacc]" style={{ fontFamily: "Space Grotesk" }}>
+                      ${entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-white font-medium" style={{ fontFamily: "Space Grotesk" }}>
+                      ${current.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <div>
+                      <p
+                        className="font-bold text-sm"
+                        style={{ color: pnl >= 0 ? "#10b981" : "#ef4444", fontFamily: "Space Grotesk" }}
+                      >
+                        {pnl >= 0 ? "+" : ""}${pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </p>
+                      <p className="text-[10px]" style={{ color: pnl >= 0 ? "#10b981" : "#ef4444" }}>
+                        {pnl >= 0 ? "+" : ""}{roi.toFixed(2)}%
+                      </p>
+                    </div>
                     <span>
                       <span
-                        className="text-xs font-medium px-2 py-0.5 rounded-full capitalize"
-                        style={{ background: statusColor[ct.status]?.bg, color: statusColor[ct.status]?.text }}
+                        className="text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize"
+                        style={{
+                          background: ct.status === "filled" ? "rgba(16,185,129,0.15)" : statusColor[ct.status]?.bg,
+                          color: ct.status === "filled" ? "#10b981" : statusColor[ct.status]?.text,
+                        }}
                       >
-                        {ct.status}
+                        {ct.status === "filled" ? "Profit Realized" : ct.status === "open" ? "In Position" : ct.status}
                       </span>
                     </span>
                     <span className="text-[#cdcacc] text-xs">{format(new Date(ct.createdAt), "MMM d")}</span>

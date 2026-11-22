@@ -84,6 +84,7 @@ export interface CopyTrade {
   amount: number;
   entryPrice: number;
   currentPrice?: number;
+  closePrice?: number;
   pnl?: number;
   status: TradeStatus;
   createdAt: string;

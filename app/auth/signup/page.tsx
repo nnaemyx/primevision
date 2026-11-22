@@ -65,8 +65,11 @@ export default function SignupPage() {
     setLoading(true);
     try {
       const { data } = await api.post("/auth/verify-otp", { userId, otp });
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("apex_just_registered", "true");
+      }
       setAuth(data.user, data.token);
-      toast.success("Welcome to PrimeVision Trades!");
+      toast.success("Welcome to ApexPrime!");
       router.push("/dashboard");
     } catch (err: unknown) {
       toast.error((err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Invalid OTP");
@@ -109,7 +112,7 @@ export default function SignupPage() {
       {/* Left panel */}
       <div className="hidden lg:flex flex-col px-12 py-14 relative" style={{ width: "42%", flexShrink: 0 }}>
         <Link href="/" className="block mb-6" style={{ fontFamily: "Satoshi", fontSize: "26px", fontWeight: 700, color: "#fff" }}>
-          PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
+          Apex <span style={{ color: "#e9d758" }}>Prime</span>
         </Link>
         <p style={{ fontFamily: "Satoshi", fontSize: "18px", color: "#cdcacc" }}>
           Already have an account?{" "}
@@ -130,7 +133,7 @@ export default function SignupPage() {
             or <span style={{ color: "#e9d758" }}>Crypto</span> seamlessly
           </h2>
           <p style={{ fontFamily: "Satoshi", fontSize: "14px", lineHeight: "22px", color: "#cdcacc", maxWidth: "340px" }}>
-            Easily Trade BTC, TSLA stocks, SPY 500 ETF Funds or other digital assets using wide range of trading options and discover exclusive digital collections with Shoreline Trades.
+            Easily Trade BTC, TSLA stocks, SPY 500 ETF Funds or other digital assets using wide range of trading options and discover exclusive digital collections with ApexPrime.
           </p>
         </div>
       </div>
@@ -141,14 +144,14 @@ export default function SignupPage() {
         style={{ background: "#150578", borderRadius: "20px", margin: "24px 24px 24px 0" }}
       >
         <Link href="/" className="lg:hidden block mb-8" style={{ fontFamily: "Satoshi", fontSize: "22px", fontWeight: 700, color: "#fff" }}>
-          PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
+          Apex <span style={{ color: "#e9d758" }}>Prime</span>
         </Link>
 
         <h1 style={{ fontFamily: "Satoshi", fontSize: "clamp(36px,4vw,48px)", fontWeight: 400, color: "#fff", lineHeight: 1, marginBottom: "8px" }}>
           Get <strong style={{ fontWeight: 700 }}>Started</strong>
         </h1>
         <p style={{ fontFamily: "Satoshi", fontSize: "18px", color: "#cdcacc", marginBottom: "32px" }}>
-          Start trading different assets with <span style={{ color: "#e9d758" }}>PrimeVision</span>
+          Start trading different assets with <span style={{ color: "#e9d758" }}>ApexPrime</span>
         </p>
 
         <form onSubmit={handleRegister} className="flex flex-col gap-4 max-w-[520px]">

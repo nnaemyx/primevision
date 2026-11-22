@@ -110,7 +110,7 @@ const sections: Section[] = [
     id: "contact-information",
     title: "11. Contact Information",
     content: "For inquiries regarding these Terms:",
-    email: "support@primevision.com"
+    email: "support@apexprime.com"
   }
 ];
 
@@ -186,7 +186,7 @@ export default function TermsPageContent() {
               maxWidth: "800px"
             }}
           >
-            By accessing or using PrimeVision Trades (“we,” “us,” or “the Platform”), you agree to these Terms and Conditions (“Terms”). If you do not agree, you may not use the Platform.
+            By accessing or using ApexPrime (“we,” “us,” or “the Platform”), you agree to these Terms and Conditions (“Terms”). If you do not agree, you may not use the Platform.
           </p>
         </div>
 
@@ -404,7 +404,7 @@ export default function TermsPageContent() {
           className="text-center py-12"
           style={{ fontFamily: "Satoshi, sans-serif", fontSize: "40px", fontWeight: 500, color: "#e9d758" }}
         >
-          Welcome to PrimeVision Trades.
+          Welcome to ApexPrime.
         </p>
       </main>
       <Footer />

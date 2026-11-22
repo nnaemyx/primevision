@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Edit2, UserCheck, UserX, Search } from "lucide-react";
+import { Edit2, UserCheck, UserX, Search, MessageSquare } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -21,6 +21,21 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [editUser, setEditUser] = useState<User | null>(null);
   const [editForm, setEditForm] = useState({ name: "", balance: 0, isActive: true, isVerified: true });
+  const [chatUser, setChatUser] = useState<User | null>(null);
+  const [chatMessage, setChatMessage] = useState("");
+
+  const sendChatMutation = useMutation({
+    mutationFn: async ({ userId, message }: { userId: string; message: string }) => {
+      const { data } = await api.post("/admin/chats/send-to-user", { userId, message });
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Message sent to user's chatbox!");
+      setChatUser(null);
+      setChatMessage("");
+    },
+    onError: () => toast.error("Failed to send chat message"),
+  });
 
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["admin-users"],
@@ -131,6 +146,16 @@ export default function AdminUsersPage() {
                     <TableCell className="py-4">
                       <div className="flex items-center gap-2">
                         <button
+                          onClick={() => {
+                            setChatUser(user);
+                            setChatMessage("");
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-white/10 text-[#e9d758] transition-colors"
+                          title="Send chat message to user"
+                        >
+                          <MessageSquare size={14} />
+                        </button>
+                        <button
                           onClick={() => openEdit(user)}
                           className="p-1.5 rounded-lg hover:bg-white/10 text-[#cdcacc] hover:text-white transition-colors"
                           title="Edit user"
@@ -209,6 +234,61 @@ export default function AdminUsersPage() {
               style={{ background: "#f5a623", color: "#fff" }}
             >
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Direct Chat Dialog */}
+      <Dialog open={!!chatUser} onOpenChange={(open) => !open && setChatUser(null)}>
+        <DialogContent
+          className="rounded-[20px] max-w-md border-0 text-white"
+          style={{ background: "#150578", border: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: "Satoshi", fontSize: "20px", color: "#fff" }}>
+              Message {chatUser?.name}
+            </DialogTitle>
+            <DialogDescription style={{ color: "#cdcacc", fontSize: "13px" }}>
+              Send a real-time message directly to this user&apos;s chatbox.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4 mt-2">
+            <div className="p-3 rounded-[12px] bg-white/5 border border-white/10 text-xs text-[#cdcacc]">
+              <p><strong>Email:</strong> {chatUser?.email}</p>
+              <p className="mt-1"><strong>Balance:</strong> ${chatUser?.balance?.toLocaleString()}</p>
+            </div>
+
+            <div>
+              <Label className="text-xs text-[#cdcacc] mb-1.5 block">Message Content</Label>
+              <textarea
+                value={chatMessage}
+                onChange={(e) => setChatMessage(e.target.value)}
+                placeholder="Type your message here..."
+                rows={4}
+                className="w-full bg-[#0e0e52] border border-white/15 rounded-[12px] p-3 text-sm text-white outline-none focus:border-[#e9d758] resize-none"
+              />
+            </div>
+
+            <Button
+              onClick={() => {
+                if (!chatMessage.trim()) {
+                  toast.error("Please enter a message");
+                  return;
+                }
+                if (chatUser) {
+                  sendChatMutation.mutate({
+                    userId: chatUser._id,
+                    message: chatMessage.trim(),
+                  });
+                }
+              }}
+              disabled={sendChatMutation.isPending || !chatMessage.trim()}
+              className="rounded-full h-10 font-semibold"
+              style={{ background: "#f5a623", color: "#fff" }}
+            >
+              {sendChatMutation.isPending ? "Sending..." : "Send Message"}
             </Button>
           </div>
         </DialogContent>

@@ -88,7 +88,7 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <Link href="/" className="block mb-6" style={{ fontFamily: "Satoshi", fontSize: "26px", fontWeight: 700, color: "#fff" }}>
-          PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
+          Apex <span style={{ color: "#e9d758" }}>Prime</span>
         </Link>
         <p style={{ fontFamily: "Satoshi", fontSize: "18px", fontWeight: 400, color: "#cdcacc" }}>
           Don&apos;t have an account?{" "}
@@ -110,7 +110,7 @@ export default function LoginPage() {
             or <span style={{ color: "#e9d758" }}>Crypto</span> seamlessly
           </h2>
           <p style={{ fontFamily: "Satoshi", fontSize: "14px", fontWeight: 400, lineHeight: "22px", color: "#cdcacc", maxWidth: "340px" }}>
-            Easily Trade BTC, TSLA stocks, SPY 500 ETF Funds or other digital assets using wide range of trading options and discover exclusive digital collections and offers with Shoreline Trades.
+            Easily Trade BTC, TSLA stocks, SPY 500 ETF Funds or other digital assets using wide range of trading options and discover exclusive digital collections and offers with ApexPrime.
           </p>
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function LoginPage() {
       >
         {/* Mobile logo */}
         <Link href="/" className="lg:hidden block mb-8" style={{ fontFamily: "Satoshi", fontSize: "22px", fontWeight: 700, color: "#fff" }}>
-          PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
+          Apex <span style={{ color: "#e9d758" }}>Prime</span>
         </Link>
 
         {step === "login" ? (

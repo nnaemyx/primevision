@@ -15,7 +15,7 @@ export default function Footer() {
               className="font-bold text-white mb-4"
               style={{ fontFamily: "Satoshi, sans-serif", fontSize: "28px", lineHeight: "36.4px" }}
             >
-              Primevision <span style={{ color: "#e9d758" }}>Trades</span>
+              Apex <span style={{ color: "#e9d758" }}>Prime</span>
             </p>
             <p
               className="leading-relaxed"
@@ -59,8 +59,8 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-white mb-4">Resources</h4>
             <p className="text-sm text-[#cdcacc]">Support Mail:</p>
-            <a href="mailto:support@primevision.com" className="text-sm text-white hover:text-[#e9d758] transition-colors">
-              support@primevision.com
+            <a href="mailto:support@apexprime.com" className="text-sm text-white hover:text-[#e9d758] transition-colors">
+              support@apexprime.com
             </a>
           </div>
         </div>
@@ -73,7 +73,7 @@ export default function Footer() {
             English <ChevronDown size={14} />
           </button>
           <p className="text-xs text-[#cdcacc]">
-            Primevision Trades © 2022 – 2026, All rights reserved
+            ApexPrime © 2022 – 2026, All rights reserved
           </p>
         </div>
       </div>

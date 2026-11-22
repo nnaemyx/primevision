@@ -5,9 +5,10 @@ import TradeHistoryDonut from "@/components/dashboard/TradeHistoryDonut";
 import PortfolioDistribution from "@/components/dashboard/PortfolioDistribution";
 import GrowthChart from "@/components/dashboard/GrowthChart";
 import TransactionHistoryTable from "@/components/dashboard/TransactionHistoryTable";
+import ExactTradesTable from "@/components/dashboard/ExactTradesTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import api from "@/lib/api";
-import { PortfolioBalance, Transaction } from "@/lib/types";
+import { PortfolioBalance, Transaction, CopyTrade, Trade } from "@/lib/types";
 
 const mockDistribution = { stocks: 0, futures: 0, crypto: 0 };
 const mockGrowthData = [
@@ -40,6 +41,22 @@ export default function DashboardPage() {
     queryKey: ["portfolio-transactions"],
     queryFn: async () => {
       const { data } = await api.get("/portfolio/transactions");
+      return data;
+    },
+  });
+
+  const { data: copyTrades = [], isLoading: copyTradesLoading } = useQuery<CopyTrade[]>({
+    queryKey: ["my-copied-trades"],
+    queryFn: async () => {
+      const { data } = await api.get("/copy-trading/my-copies");
+      return data;
+    },
+  });
+
+  const { data: manualTrades = [] } = useQuery<Trade[]>({
+    queryKey: ["my-trade-history"],
+    queryFn: async () => {
+      const { data } = await api.get("/trades/history");
       return data;
     },
   });
@@ -78,6 +95,13 @@ export default function DashboardPage() {
 
       {/* Portfolio Distribution */}
       <PortfolioDistribution distribution={portfolioBalance.distribution} />
+
+      {/* ── Exact Trades & Profit Breakdown Section ── */}
+      {copyTradesLoading ? (
+        <Skeleton className="h-64 rounded-[20px]" style={{ background: "#150578" }} />
+      ) : (
+        <ExactTradesTable copyTrades={copyTrades} manualTrades={manualTrades} />
+      )}
 
       {/* Growth Chart */}
       {growthLoading ? (

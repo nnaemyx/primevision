@@ -85,7 +85,7 @@ export default function WalletPage() {
             Connect <span style={{ color: "#e9d758" }}>Wallet</span>
           </h1>
           <p className="text-sm text-[#cdcacc] max-w-lg">
-            Link your wallet to access premium features. PrimeVision Trades offers support to over 500 exchanges and more than 10,000 cryptocurrencies.
+            Link your wallet to access premium features. ApexPrime offers support to over 500 exchanges and more than 10,000 cryptocurrencies.
           </p>
         </div>
       </div>

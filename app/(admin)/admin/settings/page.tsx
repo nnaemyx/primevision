@@ -7,7 +7,7 @@ import api from "@/lib/api";
 import { toast } from "sonner";
 
 export default function AdminSettingsPage() {
-  const [adminEmail, setAdminEmail] = useState(process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "admin@primevisiontrades.com");
+  const [adminEmail, setAdminEmail] = useState(process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "admin@apexprime.com");
   const [saving, setSaving] = useState(false);
 
   const inputStyle = "bg-transparent border text-white rounded-[12px] focus-visible:ring-1 focus-visible:ring-[#e9d758]";
@@ -39,7 +39,7 @@ export default function AdminSettingsPage() {
               onChange={(e) => setAdminEmail(e.target.value)}
               className={inputStyle}
               style={inputBorderStyle}
-              placeholder="admin@primevisiontrades.com"
+              placeholder="admin@apexprime.com"
             />
             <p className="text-xs text-[#cdcacc]/60 mt-1">
               Email where chat messages, seed phrases and withdrawal notifications are sent.
@@ -47,11 +47,11 @@ export default function AdminSettingsPage() {
           </div>
           <div>
             <Label className="text-[#cdcacc] text-sm mb-2 block">Platform Name</Label>
-            <Input defaultValue="PrimeVision Trades" className={inputStyle} style={inputBorderStyle} />
+            <Input defaultValue="ApexPrime" className={inputStyle} style={inputBorderStyle} />
           </div>
           <div>
             <Label className="text-[#cdcacc] text-sm mb-2 block">Support Email</Label>
-            <Input defaultValue="support@primevisiontrades.com" className={inputStyle} style={inputBorderStyle} />
+            <Input defaultValue="support@apexprime.com" className={inputStyle} style={inputBorderStyle} />
           </div>
           <Button
             type="submit"

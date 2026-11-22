@@ -64,7 +64,7 @@ export default function Navbar() {
               flexShrink: 0,
             }}
           >
-            Primevision <span style={{ color: "#CDCACC" }}>Trades</span>
+            Apex <span style={{ color: "#CDCACC" }}>Prime</span>
           </Link>
 
           {/* Desktop nav links */}
@@ -180,7 +180,7 @@ export default function Navbar() {
         {/* Drawer header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "40px" }}>
           <span style={{ fontFamily: "Satoshi, sans-serif", fontSize: "20px", fontWeight: 700, color: "#fff" }}>
-            Primevision <span style={{ color: "#CDCACC" }}>Trades</span>
+            Apex <span style={{ color: "#CDCACC" }}>Prime</span>
           </span>
           <button
             onClick={() => setMobileOpen(false)}

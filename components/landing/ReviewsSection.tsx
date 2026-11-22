@@ -14,14 +14,14 @@ const reviews = [
     name: "Mark Zellers",
     title: "Delposh Trainer",
     quote:
-      "You guys are fantastic. Nothing but home run picks from you guys. So glad I signed up for Primevision Trades. The stock alerts have helped me stay ahead of market moves consistently.",
+      "You guys are fantastic. Nothing but home run picks from you guys. So glad I signed up for ApexPrime. The stock alerts have helped me stay ahead of market moves consistently.",
     rating: 5,
   },
   {
     name: "Natasha Williams",
     title: "Director",
     quote:
-      "This platform makes everything so simple. I've tried other trading apps but Primevision Trades is on another level — the interface is clean, fast and I never miss a trade.",
+      "This platform makes everything so simple. I've tried other trading apps but ApexPrime is on another level — the interface is clean, fast and I never miss a trade.",
     rating: 5,
   },
   {
@@ -35,7 +35,7 @@ const reviews = [
     name: "Priya Nair",
     title: "Fintech Analyst",
     quote:
-      "Primevision Trades gives you access to futures, stocks and crypto all in one place. The charts are detailed, the interface is beautiful, and I feel confident with every decision I make.",
+      "ApexPrime gives you access to futures, stocks and crypto all in one place. The charts are detailed, the interface is beautiful, and I feel confident with every decision I make.",
     rating: 5,
   },
 ];

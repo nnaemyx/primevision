@@ -154,7 +154,7 @@ export default function HeroSection() {
           <Image
             width={430}
             height={932}
-            src="/images/Dashboard mobile.png"
+            src="/images/dashboard-preview-mobile.png"
             alt="Dashboard preview on mobile"
             style={{ width: "100%", height: "auto", display: "block" }}
             priority
@@ -176,7 +176,7 @@ export default function HeroSection() {
           <Image
             width={1080}
             height={719}
-            src="/images/image 8.png"
+            src="/images/dashboard-preview-desktop.png"
             alt="Dashboard preview on desktop"
             style={{ width: "100%", height: "auto", display: "block" }}
             priority

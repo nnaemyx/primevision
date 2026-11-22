@@ -36,8 +36,8 @@ export default function AppSidebar() {
         className="block px-3 mb-6 shrink-0"
         style={{ fontFamily: "Satoshi, sans-serif", fontSize: "20px", fontWeight: 700, color: "#fff" }}
       >
-        PrimeVision{" "}
-        <span style={{ color: "#e9d758" }}>Trades</span>
+        Apex{" "}
+        <span style={{ color: "#e9d758" }}>Prime</span>
       </Link>
 
       {/* Nav items — scrollable */}
@@ -94,7 +94,7 @@ export default function AppSidebar() {
         className="px-3 mt-3 shrink-0"
         style={{ fontFamily: "Satoshi", fontSize: "10px", color: "rgba(205,202,204,0.4)" }}
       >
-        PrimeVision Trades &copy; 2026
+        ApexPrime &copy; 2026
       </p>
     </aside>
   );

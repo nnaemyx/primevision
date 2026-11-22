@@ -47,16 +47,24 @@ const MOCK_TRADER: CopyTrader = {
 const MARKETS = ["crypto", "stocks", "futures"] as const;
 const SIDES = ["long", "short"] as const;
 
+const PRESET_TRADES = [
+  { symbol: "BTC/USD", side: "long" as const, market: "crypto" as const, entry: 67450, targetRoi: 18.5, label: "BTC/USD Bullish Continuation" },
+  { symbol: "ETH/USDT", side: "long" as const, market: "crypto" as const, entry: 3480, targetRoi: 22.0, label: "ETH/USDT Momentum Buy" },
+  { symbol: "NVDA", side: "long" as const, market: "stocks" as const, entry: 138, targetRoi: 14.5, label: "NVDA Tech Swing Long" },
+  { symbol: "Gold (XAU/USD)", side: "long" as const, market: "futures" as const, entry: 2710, targetRoi: 16.0, label: "Gold Safe Haven Long" },
+];
+
 export default function TraderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [copying, setCopying] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState(0);
   const [form, setForm] = useState({
     symbol: "BTC/USD",
     side: "long" as "long" | "short",
     market: "crypto" as "crypto" | "stocks" | "futures",
-    amount: "",
-    entryPrice: "",
+    amount: "500",
+    entryPrice: "67450",
   });
 
   const { data: trader } = useQuery<CopyTrader>({
@@ -70,6 +78,18 @@ export default function TraderDetailPage() {
 
   const t = trader ?? MOCK_TRADER;
   const perfData = t.performanceData?.length ? t.performanceData : MOCK_PERF;
+
+  const selectPreset = (index: number) => {
+    setSelectedPreset(index);
+    const p = PRESET_TRADES[index];
+    setForm((prev) => ({
+      ...prev,
+      symbol: p.symbol,
+      side: p.side,
+      market: p.market,
+      entryPrice: p.entry.toString(),
+    }));
+  };
 
   const handleCopy = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +106,7 @@ export default function TraderDetailPage() {
         amount: parseFloat(form.amount),
         entryPrice: form.entryPrice ? parseFloat(form.entryPrice) : 0,
       });
-      toast.success(`Now copying ${t.name}! Position added to your trades.`);
+      toast.success(`Exact trade copied from ${t.name}! Position is active and tracking profit.`);
       setShowForm(false);
     } catch {
       toast.error("Failed to copy trader");
@@ -126,105 +146,124 @@ export default function TraderDetailPage() {
 
       {/* Copy form */}
       {showForm && (
-        <div className="rounded-[20px] p-6" style={{ background: "#150578", border: "1px solid rgba(233,215,88,0.25)" }}>
-          <h3 className="text-base font-semibold text-white mb-4">Configure Copy Trade</h3>
-          <form onSubmit={handleCopy} className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-[#cdcacc] text-sm mb-1.5 block">Symbol (e.g. BTC/USD)</Label>
-                <Input
-                  value={form.symbol}
-                  onChange={(e) => setForm((p) => ({ ...p, symbol: e.target.value }))}
-                  placeholder="BTC/USD"
-                  required
-                  className={inputStyle}
-                  style={borderStyle}
-                />
-              </div>
-              <div>
-                <Label className="text-[#cdcacc] text-sm mb-1.5 block">Amount ($)</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  step="any"
-                  value={form.amount}
-                  onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
-                  placeholder="e.g. 500"
-                  required
-                  className={inputStyle}
-                  style={borderStyle}
-                />
-              </div>
-              <div>
-                <Label className="text-[#cdcacc] text-sm mb-1.5 block">Entry Price (optional)</Label>
-                <Input
-                  type="number"
-                  step="any"
-                  value={form.entryPrice}
-                  onChange={(e) => setForm((p) => ({ ...p, entryPrice: e.target.value }))}
-                  placeholder="e.g. 43200"
-                  className={inputStyle}
-                  style={borderStyle}
-                />
-              </div>
-              <div>
-                <Label className="text-[#cdcacc] text-sm mb-1.5 block">Market</Label>
-                <div className="flex gap-2">
-                  {MARKETS.map((m) => (
+        <div className="rounded-[20px] p-6 flex flex-col gap-5" style={{ background: "#150578", border: "1px solid rgba(233,215,88,0.3)" }}>
+          <div>
+            <h3 className="text-base font-semibold text-white">Copy Trade Execution</h3>
+            <p className="text-xs text-[#cdcacc] mt-1">
+              Select one of {t.name}&apos;s live market positions to mirror into your portfolio. Your trade will execute at the exact entry price and generate transparent profit.
+            </p>
+          </div>
+
+          <form onSubmit={handleCopy} className="flex flex-col gap-5">
+            {/* Strategy Preset Selector */}
+            <div>
+              <Label className="text-[#cdcacc] text-xs font-semibold uppercase mb-2 block">
+                Choose Strategy / Active Trade to Copy
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {PRESET_TRADES.map((preset, idx) => {
+                  const isSelected = selectedPreset === idx;
+                  return (
                     <button
-                      key={m}
+                      key={preset.symbol}
                       type="button"
-                      onClick={() => setForm((p) => ({ ...p, market: m }))}
-                      className="flex-1 py-2 rounded-[10px] text-xs font-medium capitalize transition-all"
+                      onClick={() => selectPreset(idx)}
+                      className="p-3.5 rounded-[14px] text-left transition-all border flex flex-col justify-between"
                       style={{
-                        background: form.market === m ? "#f5a623" : "rgba(14,14,82,0.6)",
-                        color: form.market === m ? "#fff" : "#cdcacc",
-                        border: `1px solid ${form.market === m ? "#f5a623" : "rgba(255,255,255,0.15)"}`,
+                        background: isSelected ? "rgba(233,215,88,0.12)" : "rgba(14,14,82,0.6)",
+                        borderColor: isSelected ? "#e9d758" : "rgba(255,255,255,0.1)",
                       }}
                     >
-                      {m}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-white" style={{ fontFamily: "Space Grotesk" }}>
+                          {preset.symbol}
+                        </span>
+                        <span
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
+                          style={{
+                            background: preset.side === "long" ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)",
+                            color: preset.side === "long" ? "#10b981" : "#ef4444",
+                          }}
+                        >
+                          {preset.side}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#cdcacc] mt-1">{preset.label}</p>
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5 text-[11px]">
+                        <span className="text-[#cdcacc]">Entry: ${preset.entry.toLocaleString()}</span>
+                        <span className="text-[#10b981] font-semibold">Target: +{preset.targetRoi}%</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Capital Allocation */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-[#cdcacc] text-xs font-semibold uppercase">
+                  Amount to Allocate ($)
+                </Label>
+                <div className="flex gap-1.5">
+                  {[250, 500, 1000, 2500].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setForm((p) => ({ ...p, amount: amt.toString() }))}
+                      className="text-[11px] px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 text-[#cdcacc] transition-colors"
+                    >
+                      ${amt}
                     </button>
                   ))}
                 </div>
               </div>
+              <Input
+                type="number"
+                min="1"
+                step="any"
+                value={form.amount}
+                onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
+                placeholder="Enter allocation amount (e.g. 500)"
+                required
+                className={inputStyle}
+                style={borderStyle}
+              />
             </div>
 
-            {/* Side selector */}
-            <div>
-              <Label className="text-[#cdcacc] text-sm mb-1.5 block">Side</Label>
-              <div className="flex gap-3">
-                {SIDES.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setForm((p) => ({ ...p, side: s }))}
-                    className="flex-1 py-2.5 rounded-[12px] text-sm font-semibold flex items-center justify-center gap-2 transition-all"
-                    style={{
-                      background: form.side === s
-                        ? s === "long" ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)"
-                        : "rgba(14,14,82,0.6)",
-                      color: form.side === s
-                        ? s === "long" ? "#10b981" : "#ef4444"
-                        : "#cdcacc",
-                      border: `1px solid ${form.side === s
-                        ? s === "long" ? "#10b981" : "#ef4444"
-                        : "rgba(255,255,255,0.15)"}`,
-                    }}
-                  >
-                    {s === "long" ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
-                  </button>
-                ))}
+            {/* Exact Trade Breakdown Summary Box */}
+            <div className="p-4 rounded-[16px] bg-[#060614]/40 border border-white/10 flex flex-col gap-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#cdcacc]">Exact Trade Copied:</span>
+                <span className="text-white font-bold">{form.symbol} ({form.side.toUpperCase()})</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#cdcacc]">Entry Price:</span>
+                <span className="text-white font-medium" style={{ fontFamily: "Space Grotesk" }}>
+                  ${parseFloat(form.entryPrice || "0").toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#cdcacc]">Allocated Investment:</span>
+                <span className="text-[#e9d758] font-bold" style={{ fontFamily: "Space Grotesk" }}>
+                  ${parseFloat(form.amount || "0").toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-white/5">
+                <span className="text-[#cdcacc]">Projected Profit:</span>
+                <span className="text-[#10b981] font-bold" style={{ fontFamily: "Space Grotesk" }}>
+                  +${((parseFloat(form.amount || "0") * (PRESET_TRADES[selectedPreset]?.targetRoi || 18)) / 100).toFixed(2)} (+{PRESET_TRADES[selectedPreset]?.targetRoi || 18}%)
+                </span>
               </div>
             </div>
 
             <Button
               type="submit"
-              disabled={copying}
-              className="rounded-full h-10 font-semibold mt-1"
+              disabled={copying || !form.amount}
+              className="rounded-full h-11 font-semibold text-sm transition-transform hover:scale-[1.01]"
               style={{ background: "#f5a623", color: "#fff" }}
             >
-              {copying ? "Placing Copy Trade..." : "Confirm Copy Trade"}
+              {copying ? "Copying Exact Trade..." : "Confirm & Execute Exact Trade"}
             </Button>
           </form>
         </div>

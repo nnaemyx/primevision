@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
-  title: "PrimeVision Trades – Trade Smarter. Grow Faster.",
+  title: "ApexPrime – Trade Smarter. Grow Faster.",
   description:
     "Trade Futures, US Stocks, and Cryptocurrency on one powerful platform. Copy expert traders, monitor live charts, and manage your portfolio with precision.",
   icons: {

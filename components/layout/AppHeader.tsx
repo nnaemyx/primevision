@@ -36,7 +36,7 @@ export default function AppHeader() {
         className="md:hidden shrink-0"
         style={{ fontFamily: "Satoshi, sans-serif", fontSize: "18px", fontWeight: 700, color: "#fff" }}
       >
-        PrimeVision <span style={{ color: "#e9d758" }}>Trades</span>
+        Apex <span style={{ color: "#e9d758" }}>Prime</span>
       </Link>
 
       {/* Desktop: user greeting with initials */}

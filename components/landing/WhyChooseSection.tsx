@@ -36,7 +36,7 @@ export default function WhyChooseSection() {
           }}
         >
           Why Choose{" "}
-          <span style={{ color: "#e9d758", fontWeight: 500, }}>Primevision Trades?</span>
+          <span style={{ color: "#e9d758", fontWeight: 500, }}>ApexPrime?</span>
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
