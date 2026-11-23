@@ -27,6 +27,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 
 const statusColor: Record<string, { bg: string; text: string }> = {
+  pending: { bg: "rgba(245,166,35,0.15)", text: "#f5a623" },
   open: { bg: "rgba(233,215,88,0.15)", text: "#e9d758" },
   filled: { bg: "rgba(16,185,129,0.15)", text: "#10b981" },
   cancelled: { bg: "rgba(239,68,68,0.15)", text: "#ef4444" },
@@ -34,7 +35,7 @@ const statusColor: Record<string, { bg: string; text: string }> = {
 
 const MARKETS = ["crypto", "stocks", "futures"] as const;
 const SIDES = ["long", "short"] as const;
-const STATUSES = ["open", "filled", "cancelled"] as const;
+const STATUSES = ["pending", "open", "filled", "cancelled"] as const;
 
 const EMPTY_CREATE = {
   userId: "",
@@ -45,7 +46,7 @@ const EMPTY_CREATE = {
   amount: "",
   entryPrice: "",
   pnl: "",
-  status: "open" as "open" | "filled" | "cancelled",
+  status: "pending" as "pending" | "open" | "filled" | "cancelled",
 };
 
 type AdminCopyTrade = CopyTrade & {
@@ -65,7 +66,7 @@ export default function AdminCopyTradesPage() {
   const [editForm, setEditForm] = useState<{
     amount: string;
     pnl: string;
-    status: "open" | "filled" | "cancelled";
+    status: "pending" | "open" | "filled" | "cancelled";
     symbol: string;
     side: "long" | "short";
     market: "crypto" | "stocks" | "futures";

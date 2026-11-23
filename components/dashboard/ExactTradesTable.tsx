@@ -2,8 +2,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { TrendingUp, TrendingDown, ArrowUpRight, Copy, CheckCircle2, Clock } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowUpRight, Copy, CheckCircle2, Clock, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CopyTrade, Trade } from "@/lib/types";
+import api from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface ExactTradesTableProps {
   copyTrades: CopyTrade[];
@@ -14,7 +18,26 @@ export default function ExactTradesTable({
   copyTrades = [],
   manualTrades = [],
 }: ExactTradesTableProps) {
+  const qc = useQueryClient();
   const [filter, setFilter] = useState<"all" | "copied" | "manual">("all");
+  const [activatingId, setActivatingId] = useState<string | null>(null);
+
+  const handleGoAhead = async (tradeId: string) => {
+    setActivatingId(tradeId);
+    try {
+      const { data } = await api.post(`/copy-trading/go-ahead/${tradeId}`);
+      toast.success(data?.message || "Trade activated! Live market execution has begun.");
+      qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
+      qc.invalidateQueries({ queryKey: ["portfolio-balance"] });
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        "Failed to activate trade";
+      toast.error(msg);
+    } finally {
+      setActivatingId(null);
+    }
+  };
 
   // Merge and normalize trades
   type UnifiedTrade = {
@@ -28,7 +51,7 @@ export default function ExactTradesTable({
     exitOrCurrentPrice: number;
     profit: number;
     roi: number;
-    status: "open" | "filled" | "cancelled";
+    status: "pending" | "open" | "filled" | "cancelled";
     date: string;
     isCopy: boolean;
   };
@@ -84,8 +107,10 @@ export default function ExactTradesTable({
     return true;
   });
 
-  const totalProfit = unified.reduce((acc, t) => acc + t.profit, 0);
-  const winningTrades = unified.filter((t) => t.profit > 0).length;
+  const totalProfit = unified
+    .filter((t) => t.status !== "pending")
+    .reduce((acc, t) => acc + t.profit, 0);
+  const winningTrades = unified.filter((t) => t.status !== "pending" && t.profit > 0).length;
 
   return (
     <div className="rounded-[20px] p-6 flex flex-col gap-5" style={{ background: "#150578" }}>
@@ -205,12 +230,14 @@ export default function ExactTradesTable({
                 <th className="py-3 px-4">Current / Close</th>
                 <th className="py-3 px-4">Exact Profit Made</th>
                 <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Action</th>
                 <th className="py-3 px-4">Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
               {filtered.map((t) => {
                 const isProfitable = t.profit >= 0;
+                const isPending = t.status === "pending";
                 return (
                   <tr key={t.id} className="hover:bg-white/[0.03] transition-colors">
                     {/* Symbol */}
@@ -265,23 +292,30 @@ export default function ExactTradesTable({
 
                     {/* Exact Profit Made */}
                     <td className="py-3.5 px-4">
-                      <div className="flex flex-col">
-                        <span
-                          className="font-bold text-sm"
-                          style={{
-                            color: isProfitable ? "#10b981" : "#ef4444",
-                            fontFamily: "Space Grotesk",
-                          }}
-                        >
-                          {isProfitable ? "+" : ""}${t.profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                        <span
-                          className="text-[10px] font-medium"
-                          style={{ color: isProfitable ? "#10b981" : "#ef4444" }}
-                        >
-                          {isProfitable ? "+" : ""}{t.roi.toFixed(2)}%
-                        </span>
-                      </div>
+                      {isPending ? (
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-xs text-[#cdcacc]">Pending Start</span>
+                          <span className="text-[10px] text-[#cdcacc]/60">Awaiting Go Ahead</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col">
+                          <span
+                            className="font-bold text-sm"
+                            style={{
+                              color: isProfitable ? "#10b981" : "#ef4444",
+                              fontFamily: "Space Grotesk",
+                            }}
+                          >
+                            {isProfitable ? "+" : ""}${t.profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                          <span
+                            className="text-[10px] font-medium"
+                            style={{ color: isProfitable ? "#10b981" : "#ef4444" }}
+                          >
+                            {isProfitable ? "+" : ""}{t.roi.toFixed(2)}%
+                          </span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Status */}
@@ -293,12 +327,16 @@ export default function ExactTradesTable({
                             t.status === "filled"
                               ? "rgba(16,185,129,0.15)"
                               : t.status === "open"
+                              ? "rgba(16,185,129,0.15)"
+                              : isPending
                               ? "rgba(233,215,88,0.15)"
                               : "rgba(239,68,68,0.15)",
                           color:
                             t.status === "filled"
                               ? "#10b981"
                               : t.status === "open"
+                              ? "#10b981"
+                              : isPending
                               ? "#e9d758"
                               : "#ef4444",
                         }}
@@ -309,12 +347,34 @@ export default function ExactTradesTable({
                           </>
                         ) : t.status === "open" ? (
                           <>
-                            <Clock size={10} /> In Position
+                            <CheckCircle2 size={10} /> In Position
+                          </>
+                        ) : isPending ? (
+                          <>
+                            <Clock size={10} /> Awaiting Go Ahead
                           </>
                         ) : (
                           "Cancelled"
                         )}
                       </span>
+                    </td>
+
+                    {/* Action */}
+                    <td className="py-3.5 px-4">
+                      {isPending && t.isCopy ? (
+                        <Button
+                          size="sm"
+                          disabled={activatingId === t.id}
+                          onClick={() => handleGoAhead(t.id)}
+                          className="rounded-full h-7 px-3 text-xs font-bold gap-1 shadow-sm transition-transform hover:scale-105"
+                          style={{ background: "#f5a623", color: "#fff" }}
+                        >
+                          <Play size={10} fill="#fff" />
+                          {activatingId === t.id ? "..." : "Go Ahead"}
+                        </Button>
+                      ) : (
+                        <span className="text-[#cdcacc]/40 text-xs">—</span>
+                      )}
                     </td>
 
                     {/* Date */}

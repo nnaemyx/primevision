@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { CopyTrader } from "@/lib/types";
+import { CopyTrader, CopyTrade } from "@/lib/types";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { useState } from "react";
+import CopiedTradeModal from "@/components/copy-trading/CopiedTradeModal";
 
 const MOCK_PERF = [
   { month: "Jan", value: 420 }, { month: "Feb", value: 510 }, { month: "Mar", value: 480 },
@@ -59,6 +60,8 @@ export default function TraderDetailPage() {
   const [copying, setCopying] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(0);
+  const [copiedTrade, setCopiedTrade] = useState<CopyTrade | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({
     symbol: "BTC/USD",
     side: "long" as "long" | "short",
@@ -99,14 +102,16 @@ export default function TraderDetailPage() {
     }
     setCopying(true);
     try {
-      await api.post(`/copy-trading/copy/${id}`, {
+      const { data } = await api.post(`/copy-trading/copy/${id}`, {
         symbol: form.symbol,
         side: form.side,
         market: form.market,
         amount: parseFloat(form.amount),
         entryPrice: form.entryPrice ? parseFloat(form.entryPrice) : 0,
       });
-      toast.success(`Exact trade copied from ${t.name}! Position is active and tracking profit.`);
+      setCopiedTrade(data.copyTrade);
+      setModalOpen(true);
+      toast.info(`Trade copied from ${t.name}! Review details and click Go Ahead to start.`);
       setShowForm(false);
     } catch {
       toast.error("Failed to copy trader");
@@ -263,7 +268,7 @@ export default function TraderDetailPage() {
               className="rounded-full h-11 font-semibold text-sm transition-transform hover:scale-[1.01]"
               style={{ background: "#f5a623", color: "#fff" }}
             >
-              {copying ? "Copying Exact Trade..." : "Confirm & Execute Exact Trade"}
+              {copying ? "Copying Trade..." : "Copy Trade (Review Before Trading)"}
             </Button>
           </form>
         </div>
@@ -362,6 +367,16 @@ export default function TraderDetailPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <CopiedTradeModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        trade={copiedTrade}
+        traderName={t.name}
+        onGoAheadSuccess={(updated) => {
+          setCopiedTrade(updated);
+        }}
+      />
     </div>
   );
 }

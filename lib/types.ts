@@ -1,5 +1,5 @@
 export type UserRole = "user" | "admin";
-export type TradeStatus = "open" | "filled" | "cancelled";
+export type TradeStatus = "pending" | "open" | "filled" | "cancelled";
 export type TxStatus = "pending" | "completed" | "rejected";
 export type Market = "stocks" | "futures" | "crypto";
 export type OrderType = "market" | "limit";
