@@ -1,8 +1,8 @@
 "use client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Star, ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +57,8 @@ const PRESET_TRADES = [
 
 export default function TraderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const qc = useQueryClient();
   const [copying, setCopying] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(0);
@@ -110,6 +112,8 @@ export default function TraderDetailPage() {
         entryPrice: form.entryPrice ? parseFloat(form.entryPrice) : 0,
       });
       setCopiedTrade(data.copyTrade);
+      await qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
+      await qc.invalidateQueries({ queryKey: ["portfolio-balance"] });
       setModalOpen(true);
       toast.info(`Trade copied from ${t.name}! Review details and click Go Ahead to start.`);
       setShowForm(false);
@@ -375,6 +379,9 @@ export default function TraderDetailPage() {
         traderName={t.name}
         onGoAheadSuccess={(updated) => {
           setCopiedTrade(updated);
+        }}
+        onDecideLater={() => {
+          router.push("/dashboard/copy-trading");
         }}
       />
     </div>

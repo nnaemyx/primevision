@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CopyTrade } from "@/lib/types";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { Play, Clock, CheckCircle2, TrendingUp, TrendingDown, ShieldAlert } from "lucide-react";
+import { Play, Clock, CheckCircle2, TrendingUp, TrendingDown, ShieldAlert, ArrowRight } from "lucide-react";
 
 interface CopiedTradeModalProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface CopiedTradeModalProps {
   trade: CopyTrade | null;
   traderName?: string;
   onGoAheadSuccess?: (updatedTrade: CopyTrade) => void;
+  onDecideLater?: () => void;
 }
 
 export default function CopiedTradeModal({
@@ -27,7 +29,9 @@ export default function CopiedTradeModal({
   trade,
   traderName,
   onGoAheadSuccess,
+  onDecideLater,
 }: CopiedTradeModalProps) {
+  const qc = useQueryClient();
   const [loading, setLoading] = useState(false);
 
   if (!trade) return null;
@@ -37,6 +41,8 @@ export default function CopiedTradeModal({
     try {
       const { data } = await api.post(`/copy-trading/go-ahead/${trade._id}`);
       toast.success(data?.message || "Trade activated! Live market trading has begun.");
+      await qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
+      await qc.invalidateQueries({ queryKey: ["portfolio-balance"] });
       onGoAheadSuccess?.(data.copyTrade || { ...trade, status: "open" });
       onOpenChange(false);
     } catch (err: unknown) {
@@ -47,6 +53,13 @@ export default function CopiedTradeModal({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDecideLater = async () => {
+    await qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
+    toast.info("Trade saved in 'My Copied Trades'! You can review and click Go Ahead anytime.");
+    onDecideLater?.();
+    onOpenChange(false);
   };
 
   const isAlreadyOpen = trade.status === "open";
@@ -193,7 +206,7 @@ export default function CopiedTradeModal({
           <Button
             type="button"
             variant="ghost"
-            onClick={() => onOpenChange(false)}
+            onClick={isAlreadyOpen || isFilled ? () => onOpenChange(false) : handleDecideLater}
             className="rounded-full text-xs text-[#cdcacc] hover:text-white hover:bg-white/5"
           >
             {isAlreadyOpen || isFilled ? "Close" : "Decide Later"}

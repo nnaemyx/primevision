@@ -6,18 +6,28 @@ import { CopyTrader, CopyTrade } from "@/lib/types";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import CopiedTradeModal from "@/components/copy-trading/CopiedTradeModal";
 
-export default function TraderCard({ trader }: { trader: CopyTrader }) {
+interface TraderCardProps {
+  trader: CopyTrader;
+  existingTrade?: CopyTrade | null;
+  onDecideLater?: () => void;
+}
+
+export default function TraderCard({ trader, existingTrade, onDecideLater }: TraderCardProps) {
+  const qc = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [copiedTrade, setCopiedTrade] = useState<CopyTrade | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+
+  const effectiveTrade = copiedTrade || existingTrade || null;
 
   const handleCopyClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (copiedTrade) {
+    if (effectiveTrade) {
       setModalOpen(true);
       return;
     }
@@ -27,6 +37,8 @@ export default function TraderCard({ trader }: { trader: CopyTrader }) {
       const { data } = await api.post(`/copy-trading/copy/${trader._id}`);
       const trade: CopyTrade = data.copyTrade;
       setCopiedTrade(trade);
+      await qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
+      await qc.invalidateQueries({ queryKey: ["portfolio-balance"] });
       setModalOpen(true);
       toast.info(`Trade copied from ${trader.name}! Review and click Go Ahead to start.`);
     } catch (err: unknown) {
@@ -37,8 +49,8 @@ export default function TraderCard({ trader }: { trader: CopyTrader }) {
     }
   };
 
-  const isPending = copiedTrade && copiedTrade.status === "pending";
-  const isOpen = copiedTrade && copiedTrade.status === "open";
+  const isPending = effectiveTrade && effectiveTrade.status === "pending";
+  const isOpen = effectiveTrade && effectiveTrade.status === "open";
 
   return (
     <>
@@ -107,11 +119,12 @@ export default function TraderCard({ trader }: { trader: CopyTrader }) {
       <CopiedTradeModal
         open={modalOpen}
         onOpenChange={setModalOpen}
-        trade={copiedTrade}
+        trade={effectiveTrade}
         traderName={trader.name}
         onGoAheadSuccess={(updated) => {
           setCopiedTrade(updated);
         }}
+        onDecideLater={onDecideLater}
       />
     </>
   );

@@ -9,7 +9,8 @@ import { CopyTrader, CopyTrade } from "@/lib/types";
 import api from "@/lib/api";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Play, Clock, CheckCircle2 } from "lucide-react";
+import { Play, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import CopiedTradeModal from "@/components/copy-trading/CopiedTradeModal";
 
 const MOCK_TRADERS: CopyTrader[] = Array.from({ length: 6 }, (_, i) => ({
   _id: `mock-${i}`,
@@ -43,7 +44,10 @@ const statusColor: Record<string, { bg: string; text: string }> = {
 
 export default function CopyTradingPage() {
   const qc = useQueryClient();
+  const [activeTab, setActiveTab] = useState("top");
   const [activatingId, setActivatingId] = useState<string | null>(null);
+  const [selectedTrade, setSelectedTrade] = useState<CopyTrade | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const { data: traders, isLoading } = useQuery<CopyTrader[]>({
     queryKey: ["copy-traders"],
@@ -66,8 +70,8 @@ export default function CopyTradingPage() {
     try {
       const { data } = await api.post(`/copy-trading/go-ahead/${tradeId}`);
       toast.success(data?.message || "Trade activated! Live trading has begun.");
-      qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
-      qc.invalidateQueries({ queryKey: ["portfolio-balance"] });
+      await qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
+      await qc.invalidateQueries({ queryKey: ["portfolio-balance"] });
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
@@ -79,6 +83,14 @@ export default function CopyTradingPage() {
   };
 
   const list = traders?.length ? traders : MOCK_TRADERS;
+  const pendingCopies = myCopies.filter((c) => c.status === "pending");
+
+  // Place pending trades at the top
+  const sortedCopies = [...myCopies].sort((a, b) => {
+    if (a.status === "pending" && b.status !== "pending") return -1;
+    if (a.status !== "pending" && b.status === "pending") return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   return (
     <div className="flex flex-col gap-6 max-w-[1400px]">
@@ -105,12 +117,53 @@ export default function CopyTradingPage() {
         </div>
       </div>
 
+      {/* Pending Decided-Later Banner */}
+      {pendingCopies.length > 0 && (
+        <div
+          className="p-4 rounded-[16px] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg"
+          style={{
+            background: "linear-gradient(135deg, rgba(245,166,35,0.18) 0%, rgba(233,215,88,0.1) 100%)",
+            border: "1px solid rgba(233,215,88,0.35)",
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#f5a623]/25 flex items-center justify-center shrink-0">
+              <Clock size={20} className="text-[#e9d758]" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">
+                {pendingCopies.length === 1
+                  ? "You have 1 copied trade awaiting your Go Ahead"
+                  : `You have ${pendingCopies.length} copied trades awaiting your Go Ahead`}
+              </p>
+              <p className="text-xs text-[#cdcacc] mt-0.5">
+                These trades were copied and saved to your portfolio. They are on hold and will start live trading when you click &ldquo;Go Ahead&rdquo;.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => setActiveTab("my-copies")}
+            className="rounded-full px-5 h-9 text-xs font-bold gap-1 shrink-0 transition-transform hover:scale-105"
+            style={{ background: "#f5a623", color: "#fff" }}
+          >
+            Review Copied Trades ({pendingCopies.length}) →
+          </Button>
+        </div>
+      )}
+
       {/* Tabs */}
-      <Tabs defaultValue="top">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-transparent border-b w-full justify-start rounded-none gap-8 px-0 mb-6" style={{ borderBottomColor: "rgba(255,255,255,0.08)" }}>
           {[
             { value: "top", label: "Top Portfolios" },
-            { value: "my-copies", label: `My Copied Trades${myCopies.length ? ` (${myCopies.length})` : ""}` },
+            {
+              value: "my-copies",
+              label:
+                pendingCopies.length > 0
+                  ? `My Copied Trades (${myCopies.length}) • ${pendingCopies.length} Awaiting Go Ahead`
+                  : `My Copied Trades${myCopies.length ? ` (${myCopies.length})` : ""}`,
+            },
             { value: "favorites", label: "My Favorites" },
           ].map((t) => (
             <TabsTrigger
@@ -133,9 +186,20 @@ export default function CopyTradingPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {list.map((trader) => (
-                <TraderCard key={trader._id} trader={trader} />
-              ))}
+              {list.map((trader) => {
+                const existingTrade = myCopies.find((c) => {
+                  const traderId = typeof c.trader === "string" ? c.trader : c.trader?._id;
+                  return traderId === trader._id && (c.status === "pending" || c.status === "open");
+                });
+                return (
+                  <TraderCard
+                    key={trader._id}
+                    trader={trader}
+                    existingTrade={existingTrade}
+                    onDecideLater={() => setActiveTab("my-copies")}
+                  />
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -150,15 +214,24 @@ export default function CopyTradingPage() {
             </div>
           ) : myCopies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-[#cdcacc]">
-              <p className="text-base">No copied trades yet.</p>
-              <p className="text-sm mt-1 opacity-60">Go to a trader&apos;s profile and click &ldquo;Copy Trader&rdquo; to get started.</p>
+              <p className="text-base font-semibold text-white">No copied trades yet.</p>
+              <p className="text-sm mt-1 text-[#cdcacc]/80">
+                Go to &ldquo;Top Portfolios&rdquo;, choose an Expert Trader, and click &ldquo;Copy&rdquo; to start.
+              </p>
+              <Button
+                onClick={() => setActiveTab("top")}
+                className="mt-4 rounded-full px-5 h-9 text-xs font-semibold"
+                style={{ background: "#f5a623", color: "#fff" }}
+              >
+                Browse Top Traders
+              </Button>
             </div>
           ) : (
             <div className="rounded-[20px] overflow-hidden" style={{ background: "#150578" }}>
               {/* Table header */}
               <div
                 className="grid gap-3 px-5 py-3.5 text-xs font-semibold text-[#cdcacc] uppercase"
-                style={{ gridTemplateColumns: "1.2fr 1fr 80px 100px 100px 100px 110px 130px 100px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(6,6,20,0.5)" }}
+                style={{ gridTemplateColumns: "1.2fr 1fr 80px 100px 100px 100px 110px 130px 110px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(6,6,20,0.5)" }}
               >
                 <span>Trader Copied</span>
                 <span>Exact Trade</span>
@@ -168,9 +241,9 @@ export default function CopyTradingPage() {
                 <span>Current Price</span>
                 <span>Exact Profit</span>
                 <span>Status</span>
-                <span>Action / Date</span>
+                <span>Action</span>
               </div>
-              {myCopies.map((ct) => {
+              {sortedCopies.map((ct) => {
                 const isPending = ct.status === "pending";
                 const pnl = ct.pnl ?? 0;
                 const entry = ct.entryPrice || 0;
@@ -179,8 +252,16 @@ export default function CopyTradingPage() {
                 return (
                   <div
                     key={ct._id}
-                    className="grid gap-3 px-5 py-4 items-center text-sm transition-colors hover:bg-white/5"
-                    style={{ gridTemplateColumns: "1.2fr 1fr 80px 100px 100px 100px 110px 130px 100px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                    className="grid gap-3 px-5 py-4 items-center text-sm transition-colors hover:bg-white/5 cursor-pointer"
+                    style={{
+                      gridTemplateColumns: "1.2fr 1fr 80px 100px 100px 100px 110px 130px 110px",
+                      borderBottom: "1px solid rgba(255,255,255,0.04)",
+                      background: isPending ? "rgba(245,166,35,0.04)" : "transparent",
+                    }}
+                    onClick={() => {
+                      setSelectedTrade(ct);
+                      setModalOpen(true);
+                    }}
                   >
                     <div className="flex items-center gap-2">
                       <span className="w-5 h-5 rounded-full bg-[#e9d758] text-[#060614] flex items-center justify-center text-[10px] font-bold">C</span>
@@ -261,7 +342,7 @@ export default function CopyTradingPage() {
                         )}
                       </span>
                     </span>
-                    <div>
+                    <div onClick={(e) => e.stopPropagation()}>
                       {isPending ? (
                         <Button
                           size="sm"
@@ -291,6 +372,16 @@ export default function CopyTradingPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <CopiedTradeModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        trade={selectedTrade}
+        traderName={selectedTrade?.traderName}
+        onGoAheadSuccess={() => {
+          qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
+        }}
+      />
     </div>
   );
 }

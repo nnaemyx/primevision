@@ -19,7 +19,7 @@ export default function ExactTradesTable({
   manualTrades = [],
 }: ExactTradesTableProps) {
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<"all" | "copied" | "manual">("all");
+  const [filter, setFilter] = useState<"all" | "copied" | "pending" | "manual">("all");
   const [activatingId, setActivatingId] = useState<string | null>(null);
 
   const handleGoAhead = async (tradeId: string) => {
@@ -27,8 +27,8 @@ export default function ExactTradesTable({
     try {
       const { data } = await api.post(`/copy-trading/go-ahead/${tradeId}`);
       toast.success(data?.message || "Trade activated! Live market execution has begun.");
-      qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
-      qc.invalidateQueries({ queryKey: ["portfolio-balance"] });
+      await qc.invalidateQueries({ queryKey: ["my-copied-trades"] });
+      await qc.invalidateQueries({ queryKey: ["portfolio-balance"] });
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
@@ -103,9 +103,13 @@ export default function ExactTradesTable({
 
   const filtered = unified.filter((t) => {
     if (filter === "copied") return t.isCopy;
+    if (filter === "pending") return t.isCopy && t.status === "pending";
     if (filter === "manual") return !t.isCopy;
     return true;
   });
+
+  const pendingCopies = copyTrades.filter((c) => c.status === "pending");
+  const pendingCount = pendingCopies.length;
 
   const totalProfit = unified
     .filter((t) => t.status !== "pending")
@@ -132,17 +136,18 @@ export default function ExactTradesTable({
         </div>
 
         {/* Filter buttons */}
-        <div className="flex items-center gap-2 bg-[#060614]/40 p-1 rounded-full w-fit">
-          {(
-            [
-              { id: "all", label: `All (${unified.length})` },
-              { id: "copied", label: `Copied Trades (${copyTrades.length})` },
-              { id: "manual", label: `Manual (${manualTrades.length})` },
-            ] as const
-          ).map((tab) => (
+        <div className="flex items-center gap-2 bg-[#060614]/40 p-1 rounded-full w-fit flex-wrap">
+          {[
+            { id: "all", label: `All (${unified.length})` },
+            { id: "copied", label: `Copied Trades (${copyTrades.length})` },
+            ...(pendingCount > 0
+              ? [{ id: "pending" as const, label: `Awaiting Go Ahead (${pendingCount})` }]
+              : []),
+            { id: "manual", label: `Manual (${manualTrades.length})` },
+          ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setFilter(tab.id)}
+              onClick={() => setFilter(tab.id as "all" | "copied" | "pending" | "manual")}
               className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all"
               style={{
                 background: filter === tab.id ? "#e9d758" : "transparent",
@@ -154,6 +159,27 @@ export default function ExactTradesTable({
           ))}
         </div>
       </div>
+
+      {/* Notice Banner for Pending Decided-Later Trades */}
+      {pendingCount > 0 && filter !== "pending" && (
+        <div
+          className="p-3.5 rounded-[14px] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs"
+          style={{ background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.3)" }}
+        >
+          <div className="flex items-center gap-2">
+            <Clock size={16} className="text-[#f5a623] shrink-0" />
+            <span className="text-[#cdcacc]">
+              You have <strong className="text-white font-semibold">{pendingCount} copied trade{pendingCount > 1 ? "s" : ""}</strong> awaiting your Go Ahead. They are saved in your copied trades below and will execute once you click Go Ahead.
+            </span>
+          </div>
+          <button
+            onClick={() => setFilter("pending")}
+            className="text-xs font-bold text-[#e9d758] hover:underline shrink-0 text-left sm:text-right"
+          >
+            Show Awaiting Trades ({pendingCount}) →
+          </button>
+        </div>
+      )}
 
       {/* Summary KPI Badges */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -179,9 +205,16 @@ export default function ExactTradesTable({
 
         <div className="p-3.5 rounded-[14px] bg-[#060614]/30 border border-white/5">
           <p className="text-xs text-[#cdcacc]">Active Copied Trades</p>
-          <p className="text-lg font-bold text-[#e9d758] mt-1" style={{ fontFamily: "Space Grotesk" }}>
-            {copyTrades.filter((c) => c.status === "open").length}
-          </p>
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-lg font-bold text-[#e9d758]" style={{ fontFamily: "Space Grotesk" }}>
+              {copyTrades.filter((c) => c.status === "open").length}
+            </span>
+            {pendingCount > 0 && (
+              <span className="text-[11px] font-semibold text-[#f5a623]">
+                (+{pendingCount} on hold)
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="p-3.5 rounded-[14px] bg-[#060614]/30 border border-white/5 flex items-center justify-between">
